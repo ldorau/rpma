@@ -15,6 +15,7 @@ add_check_whitespace(src
 
 set(SOURCES
 	common/alloc.c
+	config.c
 	librpma.c)
 
 add_library(rpma SHARED ${SOURCES})
