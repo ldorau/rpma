@@ -46,3 +46,13 @@ endif()
 
 build_test(template-test template-test/template-test.c)
 add_test_generic(NAME template-test CASE 0 TRACERS none)
+
+set(RPMA_CONFIG_SOURCES
+	rpma_config/rpma_config.c)
+
+build_test(rpma_config ${RPMA_CONFIG_SOURCES})
+target_link_directories(rpma_config PRIVATE ${LIBRPMA_LIBRARY_DIRS})
+target_compile_definitions(rpma_config PRIVATE SRCVERSION="${SRCVERSION}")
+target_include_directories(rpma_config PRIVATE ${LIBRPMA_INCLUDE_DIRS} ../src/include ../src/common)
+target_link_libraries(rpma_config rpma ${LIBRPMEM_LIBRARIES})
+add_test_generic(NAME rpma_config CASE 0 TRACERS none)
