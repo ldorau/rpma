@@ -10,7 +10,7 @@ services:
 env:
   global:
     - GITHUB_REPO=pmem/rpma
-    - DOCKERHUB_REPO=pmem/rpma
+    - DOCKERHUB_REPO=ldorau/rpma
   matrix:
     - OS=ubuntu OS_VER=19.10 TYPE=normal PUSH_IMAGE=1
     - OS=fedora OS_VER=31    TYPE=normal AUTO_DOC_UPDATE=1 PUSH_IMAGE=1
