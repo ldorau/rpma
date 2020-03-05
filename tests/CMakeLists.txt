@@ -48,3 +48,6 @@ add_subdirectory(ctrld)
 
 build_test(template-test template-test/template-test.c)
 add_test_generic(NAME template-test CASE 0 TRACERS none)
+
+build_test(hello hello/hello.c)
+add_test_generic(NAME hello CASE 0 TRACERS none)

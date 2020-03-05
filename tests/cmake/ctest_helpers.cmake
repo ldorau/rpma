@@ -70,11 +70,19 @@ function(build_test name)
 	add_check_whitespace(tests-${name} ${srcs})
 
 	add_executable(${name} ${srcs})
-	target_link_libraries(${name} ${LIBPMEM2_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} test_backtrace)
+
+	set(LIBS_TEST
+		${LIBRPMA_LIBRARIES}
+		${LIBPMEM_LIBRARIES}
+		${LIBPMEM2_LIBRARIES}
+		${CMAKE_THREAD_LIBS_INIT}
+		test_backtrace)
+	target_link_libraries(${name} ${LIBS_TEST})
+	target_include_directories(${name} PRIVATE ${LIBRPMA_INCLUDE_DIRS})
+
 	if(LIBUNWIND_FOUND)
 		target_link_libraries(${name} ${LIBUNWIND_LIBRARIES} ${CMAKE_DL_LIBS})
 	endif()
-	target_compile_definitions(${name} PRIVATE TESTS_LIBPMEM2_VERSION=0x${LIBPMEM2_VERSION_NUM})
 
 	add_dependencies(tests ${name})
 endfunction()
