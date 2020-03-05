@@ -36,19 +36,33 @@ add_cstyle(examples-template-example
 add_check_whitespace(examples-template-example
 	${CMAKE_CURRENT_SOURCE_DIR}/template-example/*.[ch])
 
+add_cstyle(examples-hello
+	${CMAKE_CURRENT_SOURCE_DIR}/hello/*.[ch])
+add_check_whitespace(examples-hello
+	${CMAKE_CURRENT_SOURCE_DIR}/hello/*.[ch])
+
 add_cstyle(examples-doc_snippets
 	${CMAKE_CURRENT_SOURCE_DIR}/doc_snippets/*.[ch])
 add_check_whitespace(examples-doc_snippets
 	${CMAKE_CURRENT_SOURCE_DIR}/doc_snippets/*.[ch])
 
+set(DEFAULT_EXAMPLE_INCLUDE_DIRS ${LIBRPMA_INCLUDE_DIRS})
+set(DEFAULT_EXAMPLE_LIBRARIES ${LIBRPMA_LIBRARIES})
+
+set(EXAMPLE_INCLUDE_DIRS ${DEFAULT_EXAMPLE_INCLUDE_DIRS})
+set(EXAMPLE_LIBRARIES ${DEFAULT_EXAMPLE_LIBRARIES})
+
 function(add_example name)
 	set(srcs ${ARGN})
 	prepend(srcs ${CMAKE_CURRENT_SOURCE_DIR} ${srcs})
 	add_executable(example-${name} ${srcs})
-	target_include_directories(example-${name} PUBLIC ${LIBRPMA_INCLUDE_DIRS})
-	target_link_libraries(example-${name} ${LIBRPMA_LIBRARIES})
+	target_include_directories(example-${name} PUBLIC ${EXAMPLE_INCLUDE_DIRS})
+	target_link_libraries(example-${name} PUBLIC ${EXAMPLE_LIBRARIES})
 endfunction()
 
 add_example(template-example template-example/template-example.c)
+
+set(EXAMPLE_LIBRARIES ${DEFAULT_EXAMPLE_LIBRARIES} ${LIBPMEM_LIBRARIES})
+add_example(hello hello/hello.c)
 
 add_library(doc_snippets_template-snippet OBJECT doc_snippets/template-snippet.c)
