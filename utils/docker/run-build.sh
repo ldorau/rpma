@@ -16,7 +16,7 @@ set -e
 EXAMPLE_TEST_DIR="/tmp/build_example"
 PREFIX=/usr
 TEST_DIR=${RPMA_TEST_DIR:-${DEFAULT_TEST_DIR}}
-CHECK_CSTYLE=${CHECK_CSTYLE:-ON}
+CHECK_CSTYLE=${CHECK_CSTYLE:-OFF}
 
 function sudo_password() {
 	echo $USERPASS | sudo -Sk $*
