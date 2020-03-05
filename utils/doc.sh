@@ -12,23 +12,27 @@ fi
 
 find $DIR -name '*.h' -print0 | while read -d $'\0' man
 do
-	errors=""
+	errors=$(mktemp)
+	rm $errors
+
 	files=""
-	src2man -r RPMA -v "RPMA Programmer's Manual" ${man} &>> output.txt
-	sed -i "/\b\(regexp escape sequence\)\b/d" output.txt
-	while read line
+	src2man -r RPMA -v "RPMA Programmer's Manual" ${man} &> output.txt
+	sed -i "/warning: regexp escape sequence \`[\]\{1\}[;,o]\{1\}' is not a known regexp operator/d" output.txt
+	cat output.txt | while read line
 	do
 		if [[ -f "${line}" ]]; then
 			files+="${line} "
 		else
-			errors+="${line}\n"
+			echo "${line}" >> $errors
 		fi
-	done < output.txt
+	done
 	rm output.txt
 
-	if [ "${errors}" != "" ]; then
+	if [ -f ${errors} ]; then
 		echo "src2man: errors found in the \"$man\" file:"
-		echo -e "$errors"
+		cat $errors
+		echo
+		rm $errors
 	fi
 
 	for f in $files; do
