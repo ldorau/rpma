@@ -6,6 +6,10 @@
 
 #include <stdlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef void *(*Malloc_func)(size_t size);
 typedef void *(*Realloc_func)(void *ptr, size_t size);
 
@@ -39,4 +43,7 @@ extern Free_func Free;
 extern Strdup_func Strdup;
 extern void *Zalloc(size_t sz);
 
+#ifdef __cplusplus
+}
+#endif
 #endif

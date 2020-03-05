@@ -15,11 +15,25 @@ add_check_whitespace(src
 
 set(SOURCES
 	common/alloc.c
-	librpma.c)
+	common/os_posix.c
+	common/os_thread_posix.c
+	common/out.c
+	common/ravl.c
+	common/util.c
+	common/util_posix.c
+	config.c
+	connection.c
+	dispatcher.c
+	librpma.c
+	memory.c
+	msg.c
+	rma.c
+	rpma_utils.c
+	zone.c)
 
 add_library(rpma SHARED ${SOURCES})
 
-target_include_directories(rpma PRIVATE . include common)
+target_include_directories(rpma PRIVATE . common include valgrind)
 
 if(TESTS_USE_FAULT_INJECTION)
 	target_compile_definitions(rpma PUBLIC FAULT_INJECTION=1)
