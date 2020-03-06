@@ -38,6 +38,7 @@ if(COVERAGE)
 endif()
 
 find_packages()
+check_SoftRoCE()
 
 add_library(test_backtrace STATIC test_backtrace.c)
 if(LIBUNWIND_FOUND)
@@ -49,5 +50,7 @@ add_subdirectory(ctrld)
 build_test(template-test template-test/template-test.c)
 add_test_generic(NAME template-test CASE 0 TRACERS none)
 
-build_test(hello hello/hello.c)
-add_test_generic(NAME hello CASE 0 TRACERS none)
+if(SOFTROCE_FOUND)
+	build_test(hello hello/hello.c)
+	add_test_generic(NAME hello CASE 0 TRACERS none)
+endif()

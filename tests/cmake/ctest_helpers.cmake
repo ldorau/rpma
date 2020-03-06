@@ -26,6 +26,26 @@ set(LIBS_DIRS ${LIBPMEM2_LIBRARY_DIRS})
 include_directories(${INCLUDE_DIRS})
 link_directories(${LIBS_DIRS})
 
+function(check_SoftRoCE)
+	execute_process(COMMAND rdma link show
+			RESULT_VARIABLE SOFTROCE_RET
+			OUTPUT_VARIABLE SOFTROCE_OUT
+			ERROR_VARIABLE SOFTROCE_ERR)
+	set(STR_ACTIVE "state ACTIVE physical_state LINK_UP")
+	string(FIND "${SOFTROCE_OUT}" "${STR_ACTIVE}" POSITION)
+	if(SOFTROCE_RET OR (${POSITION} EQUAL -1))
+		set(SOFTROCE_FOUND 0 CACHE INTERNAL "")
+		if(SOFTROCE_ERR)
+			message(WARNING "SoftRoCE NOT configured (${SOFTROCE_ERR}), some tests will be skipped")
+		else()
+			message(WARNING "SoftRoCE NOT configured, some tests will be skipped")
+		endif()
+	else()
+		set(SOFTROCE_FOUND 1 CACHE INTERNAL "")
+		message(STATUS "SoftRoCE is configured")
+	endif()
+endfunction()
+
 function(find_gdb)
 	execute_process(COMMAND gdb --help
 			RESULT_VARIABLE GDB_RET
