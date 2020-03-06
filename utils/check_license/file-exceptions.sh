@@ -4,4 +4,4 @@
 
 # file-exceptions.sh - filter out files not checked for copyright and license
 
-grep -v -E -e 'src/non-existing-path-to-be-replaced-with-real-one'
+grep -v -E -e 'src/common/sys/queue.h'
