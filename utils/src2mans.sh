@@ -18,7 +18,7 @@ find $DIR -name '*.h' -print0 | while read -d $'\0' man
 do
 	errors="$(mktemp)"
 	output="$(mktemp)"
-	files=""
+	files="$(mktemp)"
 
 	src2man -r RPMA -v "RPMA Programmer's Manual" ${man} > $output 2>&1
 	# gawk 5.0.1 does not recognize expressions \;|\,|\o  as regex operator
@@ -26,8 +26,8 @@ do
 
 	cat $output | while read line
 	do
-		if [[ -f "${line}" ]]; then
-			files+="${line} "
+		if [ -f "${line}" ]; then
+			echo ${line} >> $files
 		else
 			echo ${line} >> $errors
 		fi
@@ -38,7 +38,7 @@ do
 		cat $errors
 	fi
 
-	for f in $files; do
+	for f in $(cat $files | xargs); do
 		# get rid of a FILE section (last two lines of the file)
 		mv $f $f.tmp
 		head -n -2 $f.tmp > $f

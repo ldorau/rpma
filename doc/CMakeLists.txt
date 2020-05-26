@@ -6,7 +6,7 @@
 find_program(TXT2MAN NAMES txt2man)
 if(TXT2MAN)
 	# create man pages from sources
-	execute_process(COMMAND ${CMAKE_SOURCE_DIR}/utils/src2mans.sh ${CMAKE_SOURCE_DIR}/src)
+	add_custom_target(doc COMMAND ${CMAKE_SOURCE_DIR}/utils/src2mans.sh ${CMAKE_SOURCE_DIR}/src)
 
 	file(GLOB_RECURSE man3
 		${CMAKE_BINARY_DIR}/*.3)
