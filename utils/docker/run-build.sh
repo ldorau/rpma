@@ -65,46 +65,62 @@ function compile_example_standalone() {
 	cd -
 }
 
-echo
-echo "##############################################################"
-echo "### Verify build and install (in dir: ${PREFIX})"
-echo "##############################################################"
+function run_all_tests() {
+	PREFIX=$1
 
-mkdir -p $WORKDIR/build
-cd $WORKDIR/build
-
-cmake .. -DCMAKE_BUILD_TYPE=Debug \
-	-DTEST_DIR=$TEST_DIR \
-	-DCMAKE_INSTALL_PREFIX=$PREFIX \
-	-DCOVERAGE=$COVERAGE \
-	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
-	-DDEVELOPER_MODE=1
-
-make -j$(nproc)
-make -j$(nproc) doc
-ctest --output-on-failure
-sudo_password -S make -j$(nproc) install
-
-if [ "$COVERAGE" == "1" ]; then
-	upload_codecov tests
-fi
-
-# Test standalone compilation of all examples
-EXAMPLES=$(ls -1 $WORKDIR/examples/)
-for e in $EXAMPLES; do
-	DIR=$WORKDIR/examples/$e
-	[ ! -d $DIR ] && continue
-	[ ! -f $DIR/CMakeLists.txt ] && continue
 	echo
-	echo "###########################################################"
-	echo "### Testing standalone compilation of example: $e"
-	echo "###########################################################"
-	compile_example_standalone $DIR
+	echo "##############################################################"
+	echo "### Verify build and install (in dir: ${PREFIX})"
+	echo "##############################################################"
+
+	mkdir -p $WORKDIR/build
+	cd $WORKDIR/build
+
+	cmake .. -DCMAKE_BUILD_TYPE=Debug \
+		-DTEST_DIR=$TEST_DIR \
+		-DCMAKE_INSTALL_PREFIX=$PREFIX \
+		-DCOVERAGE=$COVERAGE \
+		-DCHECK_CSTYLE=${CHECK_CSTYLE} \
+		-DDEVELOPER_MODE=1
+
+	make -j$(nproc)
+	make -j$(nproc) doc
+
+	# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+	# XXX what about tests - when ? XXX
+	ctest --output-on-failure
+	# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+	sudo_password -S make -j$(nproc) install
+
+	if [ "$COVERAGE" == "1" ]; then
+		upload_codecov tests
+	fi
+
+	# Test standalone compilation of all examples
+	EXAMPLES=$(ls -1 $WORKDIR/examples/)
+	for e in $EXAMPLES; do
+		DIR=$WORKDIR/examples/$e
+		[ ! -d $DIR ] && continue
+		[ ! -f $DIR/CMakeLists.txt ] && continue
+		echo
+		echo "###########################################################"
+		echo "### Testing standalone compilation of example: $e"
+		echo "###########################################################"
+		compile_example_standalone $DIR
+	done
+
+	# Uninstall libraries
+	cd $WORKDIR/build
+	sudo_password -S make uninstall
+
+	cd $WORKDIR
+	rm -rf $WORKDIR/build
+}
+
+mkdir -p /tmp/rpma
+PREFIXES="/tmp/rpma /usr/local /usr"
+for pref in $PREFIXES; do
+	run_all_tests $pref
 done
 
-# Uninstall libraries
-cd $WORKDIR/build
-sudo_password -S make uninstall
-
-cd $WORKDIR
-rm -rf $WORKDIR/build
