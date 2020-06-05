@@ -17,6 +17,13 @@ RUN dnf install -y epel-release
 RUN dnf install -y 'dnf-command(config-manager)'
 RUN dnf config-manager --set-enabled PowerTools
 
+# Recover rpm database - temporary fix for the following error:
+# error: rpmdb: BDB0060 PANIC: fatal region error detected; run recovery
+# error: db5 error(-30973) from db->close: \
+#        BDB0087 DB_RUNRECOVERY: Fatal error, run database recovery
+COPY recover-rpm-database.sh recover-rpm-database.sh
+RUN ./recover-rpm-database.sh
+
 # base deps
 ENV BASE_DEPS "\
 	gcc \
