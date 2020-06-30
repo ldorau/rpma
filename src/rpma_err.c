@@ -27,9 +27,11 @@ rpma_err_get_provider_error(void)
 /*
  * rpma_err_get_msg -- return the last error message
  */
+__attribute__((noinline))
 const char *
 rpma_err_get_msg(void)
 {
+	asm(""); /* keep from being optimized away */
 	return "";
 }
 
