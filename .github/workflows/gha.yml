@@ -20,16 +20,20 @@ env:
     PUSH_IMAGE:              1
 
 jobs:
-  current:
-    name: Current
+  latest:
+    name: Latest
     runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      TYPE:       normal
     strategy:
+      fail-fast: false
       matrix:
-        CONFIG: ["N=1 OS=ubuntu OS_VER=19.10 TYPE=normal CC=gcc PUSH_IMAGE=1",
-                 "N=2 OS=fedora OS_VER=31    TYPE=normal CC=gcc PUSH_IMAGE=1 AUTO_DOC_UPDATE=1",
-                 "N=3 OS=fedora OS_VER=31    TYPE=normal CC=clang",
-                 "N=4 OS=ubuntu OS_VER=19.10 TYPE=normal CC=gcc XXX_DISABLE_COVERAGE=1",
-                 "N=5 OS=ubuntu OS_VER=19.10 TYPE=coverity CC=gcc"]
+        CONFIG: ["N=1 OS=ubuntu         OS_VER=latest",
+                 "N=2 OS=fedora         OS_VER=latest",
+                 "N=3 OS=debian         OS_VER=latest",
+                 "N=4 OS=opensuse-leap  OS_VER=latest",
+                 "N=5 OS=centos         OS_VER=latest"]
     steps:
        - name: Clone the git repo
          uses: actions/checkout@v1
@@ -43,7 +47,7 @@ jobs:
        - name: Push the image
          run: cd $WORKDIR && source ./set-vars.sh && ${{ matrix.CONFIG }} /bin/bash -c "if [[ -f ${CI_FILE_PUSH_IMAGE_TO_REPO} ]]; then images/push-image.sh; fi"
 
-# The following jobs cannot fail the build:
+#################################### OLDER ####################################
   older:
     name: Older
     runs-on: ubuntu-latest
@@ -53,15 +57,43 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        CONFIG: ["N=6 OS=fedora OS_VER=30",
-                 "N=7 OS=fedora OS_VER=29",
-                 "N=8 OS=fedora OS_VER=28",
-                 "N=9 OS=fedora OS_VER=27",
+        CONFIG: ["N=6  OS=fedora OS_VER=30",
+                 "N=7  OS=fedora OS_VER=29",
+                 "N=8  OS=fedora OS_VER=28",
+                 "N=9  OS=fedora OS_VER=27",
                  "N=10 OS=ubuntu OS_VER=18.04",
                  "N=11 OS=centos OS_VER=8",
                  "N=12 OS=centos OS_VER=7",
                  "N=13 OS=debian OS_VER=stable",
                  "N=14 OS=debian OS_VER=10"]
+    steps:
+       - name: Clone the git repo
+         uses: actions/checkout@v1
+
+       - name: Pull or rebuild the image
+         run: cd $WORKDIR && ${{ matrix.CONFIG }} ./pull-or-rebuild-image.sh
+
+       - name: Run the build
+         run: cd $WORKDIR && ${{ matrix.CONFIG }} ./build.sh
+
+       - name: Push the image
+         run: cd $WORKDIR && source ./set-vars.sh && ${{ matrix.CONFIG }} /bin/bash -c "if [[ -f ${CI_FILE_PUSH_IMAGE_TO_REPO} ]]; then images/push-image.sh; fi"
+
+#################################### NEWEST ####################################
+  newest:
+    name: Newest
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      TYPE:       normal
+    strategy:
+      fail-fast: false
+      matrix:
+        CONFIG: ["N=15 OS=archlinux-base       OS_VER=latest",
+                 "N=16 OS=debian               OS_VER=testing",
+                 "N=17 OS=fedora               OS_VER=rawhide",
+                 "N=18 OS=opensuse-tumbleweed  OS_VER=latest",
+                 "N=19 OS=ubuntu               OS_VER=rolling"]
     steps:
        - name: Clone the git repo
          uses: actions/checkout@v1
