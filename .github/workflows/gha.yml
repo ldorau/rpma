@@ -29,11 +29,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        CONFIG: ["N=1 OS=ubuntu         OS_VER=latest",
-                 "N=2 OS=fedora         OS_VER=latest",
-                 "N=3 OS=debian         OS_VER=latest",
-                 "N=4 OS=opensuse-leap  OS_VER=latest",
-                 "N=5 OS=centos         OS_VER=latest"]
+        CONFIG: ["N=L1 OS=ubuntu         OS_VER=latest",
+                 "N=L2 OS=fedora         OS_VER=latest",
+                 "N=L3 OS=debian         OS_VER=latest",
+                 "N=L4 OS=opensuse-leap  OS_VER=latest",
+                 "N=L5 OS=centos         OS_VER=latest"]
     steps:
        - name: Clone the git repo
          uses: actions/checkout@v1
@@ -57,15 +57,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        CONFIG: ["N=6  OS=fedora OS_VER=30",
-                 "N=7  OS=fedora OS_VER=29",
-                 "N=8  OS=fedora OS_VER=28",
-                 "N=9  OS=fedora OS_VER=27",
-                 "N=10 OS=ubuntu OS_VER=18.04",
-                 "N=11 OS=centos OS_VER=8",
-                 "N=12 OS=centos OS_VER=7",
-                 "N=13 OS=debian OS_VER=stable",
-                 "N=14 OS=debian OS_VER=10"]
+        CONFIG: ["N=OF1 OS=fedora OS_VER=30",
+                 "N=OF2 OS=fedora OS_VER=29",
+                 "N=OF3 OS=fedora OS_VER=28",
+                 "N=OF4 OS=fedora OS_VER=27",
+                 "N=OF5 OS=fedora OS_VER=26",
+                 "N=OU1 OS=ubuntu OS_VER=18.04",
+                 "N=OU2 OS=ubuntu OS_VER=16.04",
+                 "N=OU3 OS=ubuntu OS_VER=14.04",
+                 "N=OC1 OS=centos OS_VER=8",
+                 "N=OC2 OS=centos OS_VER=7",
+                 "N=OC3 OS=centos OS_VER=6",
+                 "N=ODS OS=debian OS_VER=stable",
+                 "N=OD0 OS=debian OS_VER=10",
+                 "N=OD9 OS=debian OS_VER=9",
+                 "N=OD8 OS=debian OS_VER=8"]
     steps:
        - name: Clone the git repo
          uses: actions/checkout@v1

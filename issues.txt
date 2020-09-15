@@ -1,0 +1,10 @@
+
+Fedora 26     - Signature of rdma_getaddrinfo() is NOT correct, too old version of librdmacm!
+
+Ubuntu 16.04  - On-Demand Paging (ODP) is NOT supported, too old version of libibverbs!
+Ubuntu 14.04  - CMake 3.5.0 or higher is required.  You are running version 2.8.12.2
+
+CentOS 6      - On-Demand Paging (ODP) is NOT supported, too old version of libibverbs!
+
+Debian 9      - Signature of rdma_getaddrinfo() is NOT correct, too old version of librdmacm!
+Debian 8      - CMake 3.5.0 or higher is required.  You are running version 3.0.2 
