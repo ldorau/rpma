@@ -81,21 +81,24 @@ main(int argc, char *argv[])
 		goto err_mr_free;
 
 	struct rpma_conn_private_data pdata;
-	void *desc;
-	pdata.ptr = &desc;
-	size_t desc_size;
 
 	/* get descriptor size */
+	size_t desc_size;
 	ret = rpma_mr_get_descriptor_size(&desc_size);
 	if (ret)
 		goto err_mr_dereg;
 
+	void *desc = malloc(desc_size);
+	if (desc == NULL)
+		goto err_mr_dereg;
+
+	pdata.ptr = desc;
 	pdata.len = desc_size;
 
 	/* receive the memory region's descriptor */
 	ret = rpma_mr_get_descriptor(mr, &desc);
 	if (ret)
-		goto err_mr_dereg;
+		goto err_desc_free;
 
 	/*
 	 * Wait for an incoming connection request, accept it and wait for its
@@ -103,7 +106,7 @@ main(int argc, char *argv[])
 	 */
 	ret = server_accept_connection(ep, &pdata, &conn);
 	if (ret)
-		goto err_mr_dereg;
+		goto err_desc_free;
 
 	/*
 	 * Between the connection being established and the connection being
@@ -115,6 +118,11 @@ main(int argc, char *argv[])
 	 * structure.
 	 */
 	(void) common_wait_for_conn_close_and_disconnect(&conn);
+
+
+err_desc_free:
+	/* free the memory */
+	free(desc);
 
 err_mr_dereg:
 	/* deregister the memory region */
