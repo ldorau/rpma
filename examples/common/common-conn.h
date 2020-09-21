@@ -22,7 +22,7 @@
  * limited by the maximum length of the private data
  * for rdma_connect() in case of RDMA_PS_TCP (56 bytes)
  */
-#define DESCRIPTORS_MAX_SIZE 24
+#define DESCRIPTORS_MAX_SIZE 240
 
 struct common_data {
 	uint16_t data_offset;	/* user data offset */
