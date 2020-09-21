@@ -218,9 +218,6 @@ err_conn_delete:
 	Rpma_provider_error = provider_error;
 
 err_conn_req_delete:
-	rdma_destroy_qp(req->id);
-	(void) ibv_destroy_cq(req->cq);
-	(void) ibv_destroy_comp_channel(req->channel);
 	(void) rdma_destroy_id(req->id);
 
 	return ret;
