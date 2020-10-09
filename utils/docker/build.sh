@@ -64,8 +64,8 @@ fi
 
 if [ -n "$DNS_SERVER" ]; then DNS_SETTING=" --dns=$DNS_SERVER "; fi
 
-# Only run doc update on $GITHUB_REPO master or stable branch
-if [[ -z "${CI_BRANCH}" || -z "${TARGET_BRANCHES[${CI_BRANCH}]}" || "$CI_EVENT_TYPE" == "pull_request" || "$CI_REPOSITORY" != "${GITHUB_REPO}" ]]; then
+# Only run doc update on $UPSTREAM_REPOSITORY master or stable branch
+if [[ -z "$CI_BRANCH" || -z "${TARGET_BRANCHES[$CI_BRANCH]}" || "$CI_EVENT_TYPE" == "pull_request" || "$CI_REPOSITORY" != "$UPSTREAM_REPOSITORY" ]]; then
 	AUTO_DOC_UPDATE=0
 fi
 
@@ -92,11 +92,11 @@ docker run --privileged=true --name=$containerName -i $TTY \
 	--env AUTO_DOC_UPDATE=$AUTO_DOC_UPDATE \
 	--env GITHUB_ACTIONS=$GITHUB_ACTIONS \
 	--env GITHUB_HEAD_REF=$GITHUB_HEAD_REF \
-	--env GITHUB_REPO=$GITHUB_REPO \
 	--env GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
 	--env GITHUB_REF=$GITHUB_REF \
 	--env GITHUB_RUN_ID=$GITHUB_RUN_ID \
 	--env GITHUB_SHA=$GITHUB_SHA \
+	--env UPSTREAM_REPOSITORY=$UPSTREAM_REPOSITORY \
 	--env WORKDIR=$WORKDIR \
 	--env SCRIPTSDIR=$SCRIPTSDIR \
 	--env COVERAGE=$COVERAGE \
