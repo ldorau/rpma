@@ -10,12 +10,11 @@ services:
 env:
   global:
     - GITHUB_REPO=pmem/rpma
-    - DOCKERHUB_REPO=pmem/rpma
+    - DOCKERHUB_REPO=ldorau/rpma
+    - TYPE=normal
+    - PUSH_IMAGE=1
   matrix:
-    - OS=ubuntu OS_VER=19.10 TYPE=normal CC=gcc
-    - OS=fedora OS_VER=31    TYPE=normal CC=gcc
-    - OS=fedora OS_VER=31    TYPE=normal CC=clang
-    - OS=ubuntu OS_VER=19.10 TYPE=coverity CC=gcc
+    - OS=debian OS_VER=testing
 
 before_install:
   - echo $TRAVIS_COMMIT_RANGE
