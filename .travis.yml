@@ -10,12 +10,18 @@ services:
 env:
   global:
     - GITHUB_REPO=pmem/rpma
-    - DOCKERHUB_REPO=pmem/rpma
+    - DOCKERHUB_REPO=ldorau/rpma
+    - DOCKERHUB_USER=ldorau
+    - TYPE=normal
   matrix:
-    - OS=ubuntu OS_VER=19.10 TYPE=normal CC=gcc
-    - OS=fedora OS_VER=31    TYPE=normal CC=gcc
-    - OS=fedora OS_VER=31    TYPE=normal CC=clang
-    - OS=ubuntu OS_VER=19.10 TYPE=coverity CC=gcc
+    - OS=archlinux-base OS_VER=latest
+    - OS=centos OS_VER=8
+    - OS=debian OS_VER=testing
+    - OS=debian OS_VER=unstable
+    - OS=fedora OS_VER=rawhide
+    - OS=opensuse-leap OS_VER=latest
+    - OS=opensuse-tumbleweed OS_VER=latest
+    - OS=ubuntu OS_VER=rolling
 
 before_install:
   - echo $TRAVIS_COMMIT_RANGE
@@ -24,4 +30,7 @@ before_install:
   - ./pull-or-rebuild-image.sh
 
 script:
-  - ./build.sh
+  - images/push-image.sh $OS-$OS_VER
+
+after_success:
+  - date
