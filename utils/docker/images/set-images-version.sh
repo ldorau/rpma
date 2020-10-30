@@ -13,4 +13,6 @@
 # has to trigger the rebuild of all Docker images.
 #
 
+# force rebuild of all docker images
+
 export IMG_VER=0.9.0
