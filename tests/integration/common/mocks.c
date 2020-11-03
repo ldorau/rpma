@@ -33,6 +33,16 @@ struct ibv_odp_caps Ibv_odp_capable_caps = {
 };
 #endif
 
+static void breakpoint(void)
+{
+}
+
+static void hook_at_begin_of_mocks(const char *func, int line)
+{
+	fprintf(stderr, ">>> FUNCTION: %s (line %i)\n", func, line);
+	breakpoint();
+}
+
 /*
  * ibv_query_device -- ibv_query_device() mock
  */
@@ -40,6 +50,7 @@ int
 ibv_query_device(struct ibv_context *context,
 		struct ibv_device_attr *device_attr)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	assert_ptr_equal(context, MOCK_VERBS);
 	assert_non_null(device_attr);
 
@@ -62,6 +73,7 @@ ibv_query_device_ex_mock(struct ibv_context *context,
 		struct ibv_device_attr_ex *attr,
 		size_t attr_size)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	assert_ptr_equal(context, MOCK_VERBS);
 	assert_null(input);
 	assert_non_null(attr);
@@ -83,6 +95,7 @@ ibv_query_device_ex_mock(struct ibv_context *context,
 int
 ibv_req_notify_cq_mock(struct ibv_cq *cq, int solicited_only)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	assert_ptr_equal(cq, MOCK_CQ);
 	assert_int_equal(solicited_only, 0);
 
@@ -96,6 +109,7 @@ int
 ibv_get_cq_event(struct ibv_comp_channel *channel, struct ibv_cq **cq,
 		void **cq_context)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(channel);
 	assert_non_null(cq);
 	assert_non_null(cq_context);
@@ -116,6 +130,7 @@ ibv_get_cq_event(struct ibv_comp_channel *channel, struct ibv_cq **cq,
 void
 ibv_ack_cq_events(struct ibv_cq *cq, unsigned nevents)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(cq);
 	assert_int_equal(nevents, 1);
 }
@@ -127,6 +142,7 @@ int
 ibv_post_send_mock(struct ibv_qp *qp, struct ibv_send_wr *wr,
 			struct ibv_send_wr **bad_wr)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	assert_non_null(qp);
 	assert_non_null(wr);
 	assert_null(wr->next);
@@ -159,6 +175,7 @@ ibv_post_send_mock(struct ibv_qp *qp, struct ibv_send_wr *wr,
 int
 ibv_poll_cq_mock(struct ibv_cq *cq, int num_entries, struct ibv_wc *wc)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(cq);
 	assert_int_equal(num_entries, 1);
 	assert_non_null(wc);
@@ -179,6 +196,7 @@ ibv_poll_cq_mock(struct ibv_cq *cq, int num_entries, struct ibv_wc *wc)
 int
 ibv_dereg_mr(struct ibv_mr *mr)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(mr);
 	return mock_type(int); /* errno */
 }
@@ -191,6 +209,7 @@ rdma_create_id(struct rdma_event_channel *channel,
 		struct rdma_cm_id **id, void *context,
 		enum rdma_port_space ps)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	assert_non_null(id);
 	assert_null(context);
 	assert_int_equal(ps, RDMA_PS_TCP);
@@ -213,6 +232,7 @@ rdma_create_id(struct rdma_event_channel *channel,
 int
 rdma_destroy_id(struct rdma_cm_id *id)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected(id);
 
 	errno = mock_type(int);
@@ -228,6 +248,7 @@ rdma_destroy_id(struct rdma_cm_id *id)
 struct ibv_pd *
 ibv_alloc_pd(struct ibv_context *ibv_ctx)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(ibv_ctx);
 
 	struct ibv_pd *pd = mock_type(struct ibv_pd *);
@@ -252,6 +273,7 @@ ibv_alloc_pd(struct ibv_context *ibv_ctx)
 int
 ibv_dealloc_pd(struct ibv_pd *pd)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(pd);
 
 	return mock_type(int);
@@ -264,6 +286,7 @@ struct ibv_cq *
 ibv_create_cq(struct ibv_context *context, int cqe, void *cq_context,
 		struct ibv_comp_channel *channel, int comp_vector)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	int cqe_default;
 	(void) rpma_conn_cfg_get_cqe(rpma_conn_cfg_default(), &cqe_default);
 
@@ -289,6 +312,7 @@ ibv_create_cq(struct ibv_context *context, int cqe, void *cq_context,
 int
 ibv_destroy_cq(struct ibv_cq *cq)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(cq);
 
 	return mock_type(int);
@@ -300,6 +324,7 @@ ibv_destroy_cq(struct ibv_cq *cq)
 struct ibv_comp_channel *
 ibv_create_comp_channel(struct ibv_context *context)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	assert_ptr_equal(context, MOCK_VERBS);
 
 	struct ibv_comp_channel *channel = mock_type(struct ibv_comp_channel *);
@@ -317,6 +342,7 @@ ibv_create_comp_channel(struct ibv_context *context)
 int
 ibv_destroy_comp_channel(struct ibv_comp_channel *channel)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	assert_ptr_equal(channel, MOCK_COMP_CHANNEL);
 
 	return mock_type(int);
@@ -328,6 +354,7 @@ ibv_destroy_comp_channel(struct ibv_comp_channel *channel)
 int
 rdma_accept(struct rdma_cm_id *id, struct rdma_conn_param *conn_param)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected(id);
 	assert_non_null(conn_param);
 	assert_int_equal(conn_param->responder_resources, RDMA_MAX_RESP_RES);
@@ -349,6 +376,7 @@ rdma_accept(struct rdma_cm_id *id, struct rdma_conn_param *conn_param)
 int
 rdma_connect(struct rdma_cm_id *id, struct rdma_conn_param *conn_param)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected(id);
 	assert_non_null(conn_param);
 	assert_int_equal(conn_param->responder_resources, RDMA_MAX_RESP_RES);
@@ -370,6 +398,7 @@ rdma_connect(struct rdma_cm_id *id, struct rdma_conn_param *conn_param)
 int
 rdma_disconnect(struct rdma_cm_id *id)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(id);
 	errno = mock_type(int);
 	if (errno)
@@ -384,6 +413,7 @@ rdma_disconnect(struct rdma_cm_id *id)
 int
 rdma_resolve_route(struct rdma_cm_id *id, int timeout_ms)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected(id);
 	assert_int_equal(timeout_ms, MOCK_TIMEOUT);
 
@@ -401,6 +431,7 @@ int
 rdma_get_cm_event(struct rdma_event_channel *channel,
 		struct rdma_cm_event **event_ptr)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(channel);
 	assert_non_null(event_ptr);
 
@@ -420,6 +451,7 @@ rdma_get_cm_event(struct rdma_event_channel *channel,
 int
 rdma_ack_cm_event(struct rdma_cm_event *event)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(event);
 
 	errno = mock_type(int);
@@ -435,6 +467,7 @@ rdma_ack_cm_event(struct rdma_cm_event *event)
 struct rdma_event_channel *
 rdma_create_event_channel(void)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	struct rdma_event_channel *evch =
 		mock_type(struct rdma_event_channel *);
 	if (!evch) {
@@ -451,6 +484,7 @@ rdma_create_event_channel(void)
 void
 rdma_destroy_event_channel(struct rdma_event_channel *channel)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(channel);
 }
 
@@ -461,6 +495,7 @@ int
 rdma_create_qp(struct rdma_cm_id *id, struct ibv_pd *pd,
 		struct ibv_qp_init_attr *qp_init_attr)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(id);
 	check_expected_ptr(pd);
 	assert_non_null(qp_init_attr);
@@ -492,6 +527,7 @@ rdma_create_qp(struct rdma_cm_id *id, struct ibv_pd *pd,
 void
 rdma_destroy_qp(struct rdma_cm_id *id)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(id);
 }
 
@@ -528,6 +564,7 @@ ibv_reg_mr_iova2(struct ibv_pd *pd, void *addr, size_t length,
 struct ibv_mr *
 ibv_reg_mr(struct ibv_pd *pd, void *addr, size_t length, int access)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(pd);
 	check_expected(length);
 	check_expected(access);
@@ -553,6 +590,7 @@ ibv_reg_mr(struct ibv_pd *pd, void *addr, size_t length, int access)
 const char *
 ibv_wc_status_str(enum ibv_wc_status status)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	return "";
 }
 
@@ -562,6 +600,7 @@ ibv_wc_status_str(enum ibv_wc_status status)
 int
 rdma_migrate_id(struct rdma_cm_id *id, struct rdma_event_channel *channel)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(id);
 	check_expected_ptr(channel);
 
@@ -579,6 +618,7 @@ int
 rdma_reject(struct rdma_cm_id *id, const void *private_data,
 		uint8_t private_data_len)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	assert_true(0);
 	return 0;
 }
@@ -589,6 +629,7 @@ rdma_reject(struct rdma_cm_id *id, const void *private_data,
 int
 rdma_listen(struct rdma_cm_id *id, int backlog)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(id);
 	assert_int_equal(backlog, 0);
 
@@ -612,6 +653,7 @@ rdma_getaddrinfo(const char *node, const char *port,
 		const struct rdma_addrinfo *hints, struct rdma_addrinfo **res)
 #endif
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	assert_string_equal(node, MOCK_ADDR);
 
 	errno = mock_type(int);
@@ -638,6 +680,7 @@ rdma_getaddrinfo(const char *node, const char *port,
 void
 rdma_freeaddrinfo(struct rdma_addrinfo *res)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(res);
 }
 
@@ -648,6 +691,7 @@ int
 rdma_resolve_addr(struct rdma_cm_id *id, struct sockaddr *src_addr,
 		struct sockaddr *dst_addr, int timeout_ms)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(id);
 	check_expected_ptr(src_addr);
 	check_expected_ptr(dst_addr);
@@ -668,6 +712,7 @@ rdma_resolve_addr(struct rdma_cm_id *id, struct sockaddr *src_addr,
 int
 rdma_bind_addr(struct rdma_cm_id *id, struct sockaddr *addr)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	check_expected_ptr(id);
 	check_expected_ptr(addr);
 
@@ -685,6 +730,7 @@ rdma_bind_addr(struct rdma_cm_id *id, struct sockaddr *addr)
 const char *
 rdma_event_str(enum rdma_cm_event_type event)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	return "";
 }
 
@@ -694,6 +740,12 @@ rdma_event_str(enum rdma_cm_event_type event)
 void *
 __wrap__test_malloc(size_t size)
 {
+	static int done = 0;
+	if (!done) {
+		hook_at_begin_of_mocks(__func__, __LINE__);
+		done = 1;
+	}
+
 	int err = mock_type(int);
 
 	if (err) {
@@ -710,6 +762,7 @@ __wrap__test_malloc(size_t size)
 int
 __wrap_posix_memalign(void **memptr, size_t alignment, size_t size)
 {
+	hook_at_begin_of_mocks(__func__, __LINE__);
 	struct posix_memalign_args *args =
 		mock_type(struct posix_memalign_args *);
 
