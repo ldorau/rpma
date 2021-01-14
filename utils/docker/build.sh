@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2017-2020, Intel Corporation
+# Copyright 2017-2021, Intel Corporation
 #
 
 #
@@ -83,6 +83,7 @@ echo Building ${IMG_VER}-${OS}-${OS_VER}
 #  - host directory containing source mounted (-v)
 #  - working directory set (-w)
 docker run --privileged=true --name=$containerName -i $TTY \
+	--net=host --device=/dev/infiniband/uverbs0 --device=/dev/infiniband/rdma_cm \
 	$DNS_SETTING \
 	${docker_opts} \
 	--env http_proxy=$http_proxy \
