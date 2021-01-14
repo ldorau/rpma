@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2016-2020, Intel Corporation
+# Copyright 2016-2021, Intel Corporation
 #
 
 #
@@ -173,6 +173,10 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug \
 make -j$(nproc)
 ctest --output-on-failure
 sudo_password -S make -j$(nproc) install
+
+#########################################################
+/bin/bash -i
+#########################################################
 
 if [ "$COVERAGE" == "1" ]; then
 	upload_codecov tests
