@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2018-2020, Intel Corporation
+# Copyright 2018-2021, Intel Corporation
 #
 
 #
@@ -242,4 +242,6 @@ function(add_multithreaded)
 			PRIVATE ${LIBIBVERBS_INCLUDE_DIRS})
 		target_link_libraries(${target} ${LIBIBVERBS_LIBRARIES})
 	endif()
+
+	add_test_generic(NAME ${target} CASE 0)
 endfunction()

@@ -48,4 +48,6 @@ endif()
 
 add_subdirectory(unit)
 add_subdirectory(integration)
-add_subdirectory(multithreaded)
+if(TESTS_SOFT_ROCE)
+	add_subdirectory(multithreaded)
+endif()
