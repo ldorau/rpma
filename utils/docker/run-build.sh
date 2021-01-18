@@ -11,6 +11,9 @@
 
 set -e
 
+rxe_cfg status
+exit 0
+
 PREFIX=/usr
 CC=${CC:-gcc}
 CHECK_CSTYLE=${CHECK_CSTYLE:-ON}
