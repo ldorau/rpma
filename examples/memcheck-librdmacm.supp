@@ -44,3 +44,73 @@
    fun:write
    fun:rdma_connect
 }
+
+##############################################################
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:idm_set
+   ...
+   fun:rdma_getaddrinfo
+   ...
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:idm_set
+   ...
+   fun:rdma_getaddrinfo
+   ...
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:idm_grow
+   ...
+   fun:rdma_getaddrinfo
+   ...
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   fun:write
+   ...
+   fun:rdma_getaddrinfo
+   ...
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:memcpy
+   ...
+   fun:rdma_getaddrinfo
+   ...
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:memcpy
+   ...
+   fun:rdma_getaddrinfo
+   ...
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ucma_query_addr
+   ...
+   fun:rdma_getaddrinfo
+   ...
+   fun:main
+}
+

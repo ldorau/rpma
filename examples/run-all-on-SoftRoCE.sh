@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2020, Intel Corporation
+# Copyright 2020-2021, Intel Corporation
 
 #
 # run-all-on-SoftRoCE.sh - run all examples on SoftRoCE (optionally under valgrind)
@@ -29,7 +29,7 @@ if [ x"$VLD_TEST" == x"--valgrind" ]; then
 	VLD_CMD="valgrind --leak-check=yes"
 	VLD_SUPP_PATH=$(dirname $0)
 	VLD_SUPP="--suppressions=${VLD_SUPP_PATH}/memcheck-librdmacm.supp"
-	VLD_SUPP="${VLD_SUPP} --suppressions=${VLD_SUPP_PATH}/memcheck-libnl.supp"
+	VLD_SUPP="${VLD_SUPP} --suppressions=${VLD_SUPP_PATH}/memcheck-libnl.supp --gen-suppressions=all"
 	# prepare the server command
 	VLD_SLOG_FILE="${BIN_DIR}/valgrind-server.log"
 	VLD_SLOG="--log-file=${VLD_SLOG_FILE}"
@@ -166,7 +166,7 @@ SFAILED=""
 N_CFAILED=0
 CFAILED=""
 
-for srv in $(find $BIN_DIR -name server | sort); do
+for srv in build/examples/01-connection/server; do # $(find $BIN_DIR -name server | sort); do #
 	DIR=$(dirname $srv)
 	run_example $DIR
 done
