@@ -12,8 +12,24 @@
 FROM archlinux/base:latest
 MAINTAINER tomasz.gromadzki@intel.com
 
+RUN pacman --version
+RUN pacman -Tv pacman || true
+RUN pacman -Ql pacman || true
+RUN ls -al /var/lib/pacman/
+
+RUN pacman -Sy --noconfirm
+RUN pacman -Qo $(find /usr -name "*libalpm*so*")
+
 # Do full system upgrade
 RUN pacman -Syu --noconfirm
+
+RUN pacman --version
+RUN ls -al /var/lib/pacman/
+RUN find /var/lib/pacman/
+RUN ls -al /var/lib/pacman/
+RUN find /usr -name "*libalpm*so*"
+RUN pacman -Tv pacman
+RUN pacman -Ql pacman
 
 # base deps
 ENV BASE_DEPS "\
