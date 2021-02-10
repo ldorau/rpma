@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2020, Intel Corporation
+# Copyright 2020-2021, Intel Corporation
 #
 
 cmake_minimum_required(VERSION 3.3)
@@ -28,8 +28,11 @@ endif()
 if(NOT LIBPMEM_FOUND)
 	find_package(LIBPMEM ${LIBPMEM_REQUIRED_VERSION} QUIET)
 endif()
+if(NOT LIBIBVERBS_FOUND)
+	find_package(LIBIBVERBS REQUIRED libibverbs)
+endif()
 
-link_directories(${LIBRPMA_LIBRARY_DIRS})
+link_directories(${LIBRPMA_LIBRARY_DIRS} ${LIBIBVERBS_LIBRARY_DIRS})
 
 function(add_example name)
 	set(srcs ${ARGN})
@@ -38,7 +41,7 @@ function(add_example name)
 		PRIVATE
 			${LIBRPMA_INCLUDE_DIRS}
 			../common)
-	target_link_libraries(${name} rpma ${LIBRT_LIBRARIES})
+	target_link_libraries(${name} rpma ${LIBRT_LIBRARIES} ${LIBIBVERBS_LIBRARIES})
 
 	if(LIBPMEM_FOUND)
 		target_include_directories(${name}

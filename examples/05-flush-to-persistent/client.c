@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2020, Intel Corporation */
+/* Copyright 2020-2021, Intel Corporation */
 
 /*
  * client.c -- a client of the flush-to-persistent example
@@ -11,6 +11,11 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <infiniband/verbs.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
 
 #ifdef USE_LIBPMEM
 #include <libpmem.h>
@@ -23,6 +28,31 @@
 #include "hello.h"
 
 #define FLUSH_ID	(void *)0xF01D /* a random identifier */
+
+#define CEIL(a, b)	(((a) + (b) - 1) / (b))
+
+/* allocations in the child process */
+#define N_ALLOCS	1024
+#define ALLOC_1MB	(1024 * 1024)
+
+/*
+ * util_mmap -- mmap chunk of memory
+ */
+void *
+util_mmap(size_t size)
+{
+	void *mem = mmap(NULL, size, PROT_READ | PROT_WRITE,
+			MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	if (mem == MAP_FAILED) {
+		perror("mmap");
+		return NULL;
+	}
+
+	/* zero the mmapped memory */
+	memset(mem, 0, size);
+
+	return mem;
+}
 
 static inline void
 write_hello_str(struct hello_t *hello, enum lang_t lang)
@@ -46,7 +76,14 @@ main(int argc, char *argv[])
 	/* validate parameters */
 	if (argc < 3) {
 		fprintf(stderr, USAGE_STR, argv[0]);
-		exit(-1);
+		return -1;
+	}
+
+	/* to support fork */
+	int ret = ibv_fork_init();
+	if (ret) {
+		fprintf(stderr, "ibv_fork_init() failed\n");
+		return -1;
 	}
 
 	/* configure logging thresholds to see more details */
@@ -56,11 +93,11 @@ main(int argc, char *argv[])
 	/* read common parameters */
 	char *addr = argv[1];
 	char *port = argv[2];
-	int ret;
 
 	/* resources - memory region */
 	void *mr_ptr = NULL;
 	size_t mr_size = 0;
+	size_t mmap_size;
 	size_t data_offset = 0;
 	struct rpma_mr_remote *dst_mr = NULL;
 	size_t dst_size = 0;
@@ -136,11 +173,19 @@ main(int argc, char *argv[])
 
 	/* if no pmem support or it is not provided */
 	if (mr_ptr == NULL) {
-		mr_ptr = malloc_aligned(sizeof(struct hello_t));
+		long pagesize = sysconf(_SC_PAGESIZE);
+		if (pagesize < 0) {
+			perror("sysconf");
+			return -1;
+		}
+
+		mr_size = sizeof(struct hello_t);
+		mmap_size = CEIL(mr_size, (size_t)pagesize);
+
+		mr_ptr = util_mmap(mmap_size);
 		if (mr_ptr == NULL)
 			return -1;
 
-		mr_size = sizeof(struct hello_t);
 		hello = mr_ptr;
 
 		/* write an initial value */
@@ -218,6 +263,52 @@ main(int argc, char *argv[])
 		goto err_mr_remote_delete;
 	}
 
+	int pid = fork();
+	if (pid == 0) {
+		/* this is the begin of the child process */
+		int i, j;
+
+		/* allocate array of pointers */
+		void **ptrs = calloc(N_ALLOCS, sizeof(*ptrs));
+		if (ptrs == NULL) {
+			perror("calloc");
+			_exit(-1);
+		}
+
+		/* allocate memory from the heap */
+		for (i = 0; i < N_ALLOCS; i++) {
+			ptrs[i] = malloc(ALLOC_1MB);
+			if (ptrs[i] == NULL)
+				break;
+		}
+		for (j = 0; j < i; j++)
+			free(ptrs[j]);
+		free(ptrs);
+
+		/* create and write to a file */
+		FILE *file = fopen("tmpfile", "w");
+		if (file == NULL) {
+			perror("fopen");
+			_exit(-1);
+		}
+
+		fprintf(file, "An example text\n");
+
+		int ret = fclose(file);
+		if (ret) {
+			perror("fclose");
+			_exit(-1);
+		}
+
+		_exit(0);
+		/* this is the end of the child process */
+	} else if (pid < 0) {
+		/* fork() failed */
+		_exit(0);
+	}
+
+	/* This is the parent process */
+
 	dst_offset = dst_data->data_offset;
 	ret = rpma_write(conn, dst_mr, dst_offset, src_mr,
 			(data_offset + offsetof(struct hello_t, str)), KILOBYTE,
@@ -273,6 +364,13 @@ main(int argc, char *argv[])
 
 	(void) printf("Translation: %s\n", hello->str);
 
+	fprintf(stderr, "Waiting for the child process (PID %i) to end ...\n",
+		pid);
+	int status;
+	waitpid(pid, &status, 0);
+	fprintf(stderr, "The child process has ended with the status: %i\n",
+		status);
+
 err_mr_remote_delete:
 	/* delete the remote memory region's structure */
 	(void) rpma_mr_remote_delete(&dst_mr);
@@ -297,7 +395,7 @@ err_free:
 #endif
 
 	if (mr_ptr != NULL)
-		free(mr_ptr);
+		munmap(mr_ptr, mmap_size);
 
 	return ret;
 }

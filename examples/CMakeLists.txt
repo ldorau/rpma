@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2018-2020, Intel Corporation
+# Copyright 2018-2021, Intel Corporation
 #
 
 add_flag(-Wall)
@@ -107,9 +107,9 @@ add_example(NAME 04-write-to-persistent BIN server USE_LIBPMEM_IF_FOUND
 	SRCS 04-write-to-persistent/server.c common/common-conn.c)
 add_example(NAME 04-write-to-persistent BIN client USE_LIBPMEM_IF_FOUND
 	SRCS 04-write-to-persistent/client.c common/common-conn.c)
-add_example(NAME 05-flush-to-persistent BIN server USE_LIBPMEM_IF_FOUND
+add_example(NAME 05-flush-to-persistent BIN server USE_LIBPMEM_IF_FOUND USE_LIBIBVERBS
 	SRCS 05-flush-to-persistent/server.c common/common-conn.c)
-add_example(NAME 05-flush-to-persistent BIN client USE_LIBPMEM_IF_FOUND
+add_example(NAME 05-flush-to-persistent BIN client USE_LIBPMEM_IF_FOUND USE_LIBIBVERBS
 	SRCS 05-flush-to-persistent/client.c common/common-conn.c)
 add_example(NAME 06-multiple-connections BIN server USE_LIBPMEM_IF_FOUND
 	SRCS 06-multiple-connections/server.c common/common-conn.c common/common-epoll.c)
