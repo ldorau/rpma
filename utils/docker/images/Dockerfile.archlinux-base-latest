@@ -45,7 +45,8 @@ RUN pacman -Syu --noconfirm \
 	$BASE_DEPS \
 	$RDMA_DEPS \
 	$RPMA_DEPS && \
-    cp /etc/makepkg.conf /root
+    cp /etc/makepkg.conf /root && \
+    ls -al /root/makepkg.conf
 
 # Install cmocka
 COPY install-cmocka.sh install-cmocka.sh
@@ -73,11 +74,13 @@ RUN echo 'Defaults env_keep += "ftp_proxy http_proxy https_proxy no_proxy"' >> /
 RUN echo 'Defaults env_keep += "FTP_PROXY HTTP_PROXY HTTPS_PROXY NO_PROXY"' >> /etc/sudoers
 
 # restore /etc/makepkg.conf
-RUN [ ! -f /etc/makepkg.conf -a -f /root/makepkg.conf ] && \
-     mv /root/makepkg.conf /etc/makepkg.conf
+RUN ls -al /root/makepkg.conf
+RUN mv /root/makepkg.conf /etc/makepkg.conf
+RUN ls -al /etc/makepkg.conf
 
 # Install rdma-core (requires user 'user')
 COPY install-archlinux-aur.sh install-archlinux-aur.sh
+RUN ls -al /etc/makepkg.conf
 RUN ./install-archlinux-aur.sh rdma-core
 
 # Switch to user
