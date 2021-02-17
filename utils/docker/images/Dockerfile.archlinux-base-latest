@@ -12,9 +12,6 @@
 FROM archlinux/base:latest
 MAINTAINER tomasz.gromadzki@intel.com
 
-# Do full system upgrade
-RUN pacman -Syu --noconfirm
-
 # base deps
 ENV BASE_DEPS "\
 	clang \
@@ -41,8 +38,9 @@ ENV RPMA_DEPS "\
 	libunwind \
 	pandoc"
 
-# Install required packages
-RUN pacman -S --noconfirm \
+# Do full system upgrade
+# and install required packages:
+RUN pacman -Syu --noconfirm \
 	$BASE_DEPS \
 	$RDMA_DEPS \
 	$RPMA_DEPS
