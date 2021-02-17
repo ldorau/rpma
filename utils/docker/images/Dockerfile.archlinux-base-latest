@@ -38,12 +38,14 @@ ENV RPMA_DEPS "\
 	libunwind \
 	pandoc"
 
-# Do full system upgrade
-# and install required packages:
+# Do full system upgrade,
+# install required packages,
+# and save /etc/makepkg.conf:
 RUN pacman -Syu --noconfirm \
 	$BASE_DEPS \
 	$RDMA_DEPS \
-	$RPMA_DEPS
+	$RPMA_DEPS && \
+    cp /etc/makepkg.conf /root
 
 # Install cmocka
 COPY install-cmocka.sh install-cmocka.sh
@@ -69,6 +71,10 @@ RUN gpasswd wheel -a $USER
 # - it is required by 'makepkg' to download required packages and sources
 RUN echo 'Defaults env_keep += "ftp_proxy http_proxy https_proxy no_proxy"' >> /etc/sudoers
 RUN echo 'Defaults env_keep += "FTP_PROXY HTTP_PROXY HTTPS_PROXY NO_PROXY"' >> /etc/sudoers
+
+# restore /etc/makepkg.conf
+RUN [ ! -f /etc/makepkg.conf -a -f /root/makepkg.conf ] && \
+     mv /root/makepkg.conf /etc/makepkg.conf
 
 # Install rdma-core (requires user 'user')
 COPY install-archlinux-aur.sh install-archlinux-aur.sh
