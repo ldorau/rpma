@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2020, Intel Corporation */
+/* Copyright 2020-2021, Intel Corporation */
 
 /*
  * client.c -- a client of the read-to-persistent example
@@ -10,6 +10,10 @@
 #include <librpma.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#ifdef TEST_MOCK_MAIN
+#define main client_main
+#endif
 
 #ifdef USE_LIBPMEM
 #include <libpmem.h>
