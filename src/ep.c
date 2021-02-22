@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2020, Intel Corporation */
+/* Copyright 2020-2021, Intel Corporation */
 
 /*
  * ep.c -- librpma endpoint-related implementations
@@ -175,8 +175,9 @@ rpma_ep_next_conn_req(struct rpma_ep *ep, const struct rpma_conn_cfg *cfg,
 
 	/* we expect only one type of events here */
 	if (event->event != RDMA_CM_EVENT_CONNECT_REQUEST) {
-		RPMA_LOG_ERROR("Unexpected event received: %s",
-				rdma_event_str(event->event));
+		RPMA_LOG_ERROR(
+			"Unexpected event received: %s (!= RDMA_CM_EVENT_CONNECT_REQUEST)",
+			rdma_event_str(event->event));
 		ret = RPMA_E_INVAL;
 		goto err_ack;
 	}
