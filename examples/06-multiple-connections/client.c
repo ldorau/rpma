@@ -18,6 +18,10 @@
 #include "common-conn.h"
 #include "multiple-connections-common.h"
 
+#ifdef TEST_MOCK_MAIN
+#define main client_main
+#endif
+
 static char *Names[] = {
 	"Andy",
 	"Chet",

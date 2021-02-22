@@ -11,6 +11,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifdef TEST_MOCK_MAIN
+#define main client_main
+#endif
+
 #ifdef USE_LIBPMEM
 #include <libpmem.h>
 #define USAGE_STR "usage: %s <server_address> <port> [<pmem-path>]\n"
