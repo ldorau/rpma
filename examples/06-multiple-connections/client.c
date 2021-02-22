@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2020, Intel Corporation */
+/* Copyright 2020-2021, Intel Corporation */
 
 /*
  * client.c -- a client of the multiple-connections example
@@ -17,6 +17,10 @@
 
 #include "common-conn.h"
 #include "multiple-connections-common.h"
+
+#ifdef TEST_MOCK_MAIN
+#define main client_main
+#endif
 
 static char *Names[] = {
 	"Andy",

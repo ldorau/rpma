@@ -14,11 +14,15 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 
-#define USAGE_STR "usage: %s <server_address> <port>\n"
-
 #include "common-conn.h"
 #include "common-epoll.h"
 #include "multiple-connections-common.h"
+
+#ifdef TEST_MOCK_MAIN
+#define main server_main
+#endif
+
+#define USAGE_STR "usage: %s <server_address> <port>\n"
 
 #define CLIENT_MAX 10
 
