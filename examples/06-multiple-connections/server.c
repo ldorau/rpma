@@ -25,6 +25,7 @@
 #define USAGE_STR "usage: %s <server_address> <port>\n"
 
 #define CLIENT_MAX 10
+#define TIMEOUT_5S (5000) /* [msec] == 5s */
 
 struct client_res {
 	/* RPMA resources */
@@ -441,7 +442,7 @@ main(int argc, char *argv[])
 	struct epoll_event event;
 	struct custom_event *ce;
 	while ((ret = epoll_wait(svr.epoll, &event, 1 /* # of events */,
-				TIMEOUT_15S)) == 1) {
+				TIMEOUT_5S)) == 1) {
 		ce = (struct custom_event *)event.data.ptr;
 		ce->func(ce);
 	}
