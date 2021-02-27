@@ -21,6 +21,7 @@
 #include "multiple-connections-common.h"
 
 #define CLIENT_MAX 10
+#define TIMEOUT_2S (2000) /* [msec] == 2s */
 
 struct client_res {
 	/* RPMA resources */
@@ -437,7 +438,7 @@ main(int argc, char *argv[])
 	struct epoll_event event;
 	struct custom_event *ce;
 	while ((ret = epoll_wait(svr.epoll, &event, 1 /* # of events */,
-				TIMEOUT_15S)) == 1) {
+				TIMEOUT_2S)) == 1) {
 		ce = (struct custom_event *)event.data.ptr;
 		ce->func(ce);
 	}
