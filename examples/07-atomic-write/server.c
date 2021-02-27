@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2020, Intel Corporation */
+/* Copyright 2020-2021, Intel Corporation */
 
 /*
  * server.c -- a server of the atomic-write example
@@ -12,6 +12,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifdef TEST_MOCK_MAIN
+#define main server_main
+#endif
 
 #ifdef USE_LIBPMEM
 #include <libpmem.h>
