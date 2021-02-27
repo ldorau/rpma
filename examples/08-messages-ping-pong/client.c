@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2020, Intel Corporation */
+/* Copyright 2020-2021, Intel Corporation */
 
 /*
  * client.c -- a client of the messages-ping-pong example
@@ -14,6 +14,10 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#ifdef TEST_MOCK_MAIN
+#define main client_main
+#endif
 
 #include "common-conn.h"
 #include "messages-ping-pong-common.h"
