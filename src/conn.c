@@ -137,6 +137,9 @@ rpma_conn_next_event(struct rpma_conn *conn, enum rpma_conn_event *event)
 		return RPMA_E_INVAL;
 
 	struct rdma_cm_event *edata = NULL;
+	fprintf(stderr,
+		">>> BEFORE rdma_get_cm_event(): fd = %i\n",
+		conn->evch->fd);
 	if (rdma_get_cm_event(conn->evch, &edata)) {
 		if (errno == ENODATA)
 			return RPMA_E_NO_EVENT;
@@ -144,6 +147,14 @@ rpma_conn_next_event(struct rpma_conn *conn, enum rpma_conn_event *event)
 		RPMA_LOG_ERROR_WITH_ERRNO(errno, "rdma_get_cm_event()");
 		return RPMA_E_PROVIDER;
 	}
+
+	if (edata->event == RDMA_CM_EVENT_ESTABLISHED)
+		fprintf(stderr,
+			">>> rpma_conn_next_event(): received RDMA_CM_EVENT_ESTABLISHED\n");
+	else
+		fprintf(stderr,
+			">>> rpma_conn_next_event(): received edata->event = %i\n",
+			edata->event);
 
 	if (edata->event == RDMA_CM_EVENT_ESTABLISHED &&
 			conn->data.ptr == NULL) {

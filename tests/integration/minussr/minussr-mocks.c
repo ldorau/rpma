@@ -805,6 +805,9 @@ rdma_get_cm_event(struct rdma_event_channel *channel,
 	}
 
 	log_info("reading from FIFO ...");
+	fprintf(stderr,
+		"############# reading from FIFO fd = %i\n",
+		channel->fd);
 
 	ssize_t n_bytes = read(channel->fd, event, sizeof(*event));
 	if ((size_t)n_bytes < sizeof(*event)) {
@@ -838,8 +841,18 @@ rdma_ack_cm_event(struct rdma_cm_event *event)
 		return 0;
 	}
 
+	fprintf(stderr,
+		"####### LOOPING BEFORE CLIENT sending RDMA_CM_EVENT_ESTABLISHED n");
+
+	int loop = 1;
+	while (loop)
+		sleep(1);
+
 	/* client */
-	log_info("sending RDMA_CM_EVENT_ESTABLISHED ...");
+	log_info("CLIENT sending RDMA_CM_EVENT_ESTABLISHED ...");
+	fprintf(stderr,
+		"############# CLIENT sending RDMA_CM_EVENT_ESTABLISHED fd = %i\n",
+		Fd_evch_wr);
 
 	ssize_t n_bytes = write(Fd_evch_wr, event, sizeof(*event));
 	if ((size_t)n_bytes < sizeof(*event)) {

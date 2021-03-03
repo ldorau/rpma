@@ -144,6 +144,13 @@ void client_handle_connection_event(struct custom_event *ce);
 int
 client_add_to_epoll(struct client_res *clnt, int epoll)
 {
+	fprintf(stderr,
+		"####### LOOPING BEFORE client_add_to_epoll()\n");
+
+	int loop = 1;
+	while (loop)
+		sleep(1);
+
 	/* get the connection's event fd and add it to epoll */
 	int fd;
 	int ret = rpma_conn_get_event_fd(clnt->conn, &fd);
@@ -153,6 +160,10 @@ client_add_to_epoll(struct client_res *clnt, int epoll)
 			&clnt->ev_conn_event);
 	if (ret)
 		return ret;
+
+	fprintf(stderr,
+		"####### client_add_to_epoll(): added to epoll: EVENT channel fd = %i\n",
+		fd);
 
 	/* get the connection's completion fd and add it to epoll */
 	ret = rpma_conn_get_completion_fd(clnt->conn, &fd);
@@ -164,6 +175,14 @@ client_add_to_epoll(struct client_res *clnt, int epoll)
 			&clnt->ev_conn_cmpl);
 	if (ret)
 		epoll_delete(epoll, &clnt->ev_conn_event);
+
+	fprintf(stderr,
+		"####### client_add_to_epoll(): added to epoll: COMPLETION channel fd = %i\n",
+		fd);
+
+	int loop2 = 1;
+	while (loop2)
+		sleep(1);
 
 	return ret;
 }
@@ -333,10 +352,17 @@ client_handle_connection_event(struct custom_event *ce)
 	/* proceed to the callback specific to the received event */
 	switch (event) {
 	case RPMA_CONN_ESTABLISHED:
+		fprintf(stderr,
+			"####### client_handle_connection_event(): event = RPMA_CONN_ESTABLISHED\n");
 		client_handle_is_ready(clnt);
 		break;
 	case RPMA_CONN_CLOSED:
+		fprintf(stderr,
+			"####### client_handle_connection_event(): event = RPMA_CONN_CLOSED\n");
 	default:
+		fprintf(stderr,
+			"####### client_handle_connection_event(): event = %i\n",
+			event);
 		client_delete(clnt);
 		break;
 	}
@@ -435,6 +461,10 @@ main(int argc, char *argv[])
 			&svr.ev_incoming);
 	if (ret)
 		goto err_ep_shutdown;
+
+	fprintf(stderr,
+		"####### MAIN epoll_add(): added to epoll: endpoint's event file descriptor fd = %i\n",
+		ep_fd);
 
 	(void) printf("Today I have got in touch with:\n");
 

@@ -91,6 +91,10 @@ client_connect(struct rpma_peer *peer, const char *addr, const char *port,
 		goto err_conn_delete;
 	}
 
+	fprintf(stderr,
+		"client_connect(): rpma_conn_next_event() returned event: %s (RPMA_CONN_ESTABLISHED)\n",
+		rpma_utils_conn_event_2str(conn_event));
+
 	return 0;
 
 err_conn_delete:
@@ -134,6 +138,11 @@ server_accept_connection(struct rpma_ep *ep,
 			rpma_utils_conn_event_2str(conn_event));
 		ret = -1;
 	}
+
+	if (conn_event == RPMA_CONN_ESTABLISHED)
+		fprintf(stderr,
+			"server_accept_connection(): rpma_conn_next_event() returned event: %s (RPMA_CONN_ESTABLISHED)\n",
+			rpma_utils_conn_event_2str(conn_event));
 
 	if (ret)
 		(void) rpma_conn_delete(conn_ptr);

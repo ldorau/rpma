@@ -7,6 +7,7 @@
 
 #include <errno.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "conn_cfg.h"
 #include "conn_req.h"
@@ -165,6 +166,9 @@ rpma_ep_next_conn_req(struct rpma_ep *ep, const struct rpma_conn_cfg *cfg,
 	struct rdma_cm_event *event = NULL;
 
 	/* get an event */
+	fprintf(stderr,
+		">>> BEFORE rdma_get_cm_event(): fd = %i\n",
+		ep->evch->fd);
 	if (rdma_get_cm_event(ep->evch, &event)) {
 		if (errno == ENODATA)
 			return RPMA_E_NO_EVENT;
@@ -176,11 +180,15 @@ rpma_ep_next_conn_req(struct rpma_ep *ep, const struct rpma_conn_cfg *cfg,
 	/* we expect only one type of events here */
 	if (event->event != RDMA_CM_EVENT_CONNECT_REQUEST) {
 		RPMA_LOG_ERROR(
-			"Unexpected event received: %s (!= RDMA_CM_EVENT_CONNECT_REQUEST)",
-			rdma_event_str(event->event));
+			"Unexpected event received: %s (!= RDMA_CM_EVENT_CONNECT_REQUEST) on fd = %i",
+			rdma_event_str(event->event), ep->evch->fd);
 		ret = RPMA_E_INVAL;
 		goto err_ack;
 	}
+
+	RPMA_LOG_ERROR(
+		"Expected event received: %s (== RDMA_CM_EVENT_CONNECT_REQUEST) on fd = %i",
+		rdma_event_str(event->event), ep->evch->fd);
 
 	ret = rpma_conn_req_from_cm_event(ep->peer, event, cfg, req_ptr);
 	if (ret)
