@@ -15,6 +15,10 @@
 
 #include "common-conn.h"
 
+#ifdef TEST_MOCK_MAIN
+#define main server_main
+#endif
+
 #define USAGE_STR "usage: %s <server_address> <port>\n"
 
 int
