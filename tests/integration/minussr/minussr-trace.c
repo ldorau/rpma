@@ -46,10 +46,7 @@ trace(const char *func, int op, long ret, int flags, int n_called)
 {
 	static __thread int _n_func_trace = 0;
 
-	if (Iam_server)
-		fprintf(stderr, "[server] # ");
-	else
-		fprintf(stderr, "[client] - ");
+	fprintf(stderr, "[%s] %s ", My_name, (Iam_server ? "#" : "-"));
 
 	if (CAN_FAIL(flags))
 		_n_func_trace++;
