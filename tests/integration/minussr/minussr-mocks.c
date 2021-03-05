@@ -27,44 +27,106 @@
 #define COMP_CHANNEL_CLIENT \
 	"/tmp/minussr-comp-channel-client"
 
-static int n_client = 0;
+#define MAX_CLIENTS 10
+
+struct node_s {
+	int index;
+	struct ibv_context *ibv_context;
+	struct ibv_qp *qp;
+};
+
+/* >>> Beginning of Global variables <<< */
+static struct node_s Nodes[1 + MAX_CLIENTS];
+/* >>> End of Global variables <<< */
 
 /* >>> Beginning of Thread-Local Storage <<< */
+/*
+ * Node_index = 0 - server
+ * Node_index > 0 - client number
+ */
+static __thread int Node_index;
 static __thread struct ibv_context Verbs_ibv_context;
 static __thread struct rdma_cm_id *rdma_default_id = NULL;
 static __thread int Fd_evch_wr = 0;
 /* >>> End of Thread-Local Storage <<< */
 
-/* CQ WCs */
-struct cq_wcs_s {
+struct rqi_s {
+	uint64_t wr_id;
+	struct ibv_sge sge;
+};
+
+struct recv_queue_s {
+	struct rqi_s *rq_items;
+	int n_sges;
+	int i_recv;
+	int i_send;
+};
+
+/* QP context */
+struct qp_ctx_s {
+	struct recv_queue_s recv_queue;
+};
+
+/* CQ context */
+struct cq_ctx_s {
 	struct ibv_wc *wcs;
-	int i_wc;
+	int n_wcs;
+	int i_write;
+	int i_read;
 };
 
 /* mocks of OPs */
 static int ibv_post_send_mock(struct ibv_qp *qp, struct ibv_send_wr *wr,
 			struct ibv_send_wr **bad_wr);
+static int ibv_post_recv_mock(struct ibv_qp *qp, struct ibv_recv_wr *wr,
+			struct ibv_recv_wr **bad_wr);
 static int ibv_req_notify_cq_mock(struct ibv_cq *cq, int solicited_only);
 int ibv_poll_cq_mock(struct ibv_cq *cq, int num_entries, struct ibv_wc *wc);
 
 int
 minussr_init(int iam_server)
 {
+	static int client_number = 0;
+
 	memset(&Verbs_ibv_context, 0, sizeof(Verbs_ibv_context));
 
-	/*
-	 * cmd_fd = 0 - server
-	 * cmd_fd > 0 - client number
-	 */
-	if (!iam_server) { /* client only */
-		Verbs_ibv_context.cmd_fd = ++n_client;
-		Verbs_ibv_context.device =
-			(struct ibv_device *)(uintptr_t)(n_client);
+	if (iam_server) {
+		/* the server */
+		Node_index = 0;
+	} else {
+		/* a client */
+		Node_index = ++client_number;
+		if (client_number > MAX_CLIENTS) {
+			fprintf(stderr,
+				"FATAL ERROR: too many clients (> %i)",
+				MAX_CLIENTS);
+			exit(-1);
+		}
 	}
 
-	Verbs_ibv_context.ops.post_send = ibv_post_send_mock;
-	Verbs_ibv_context.ops.req_notify_cq = ibv_req_notify_cq_mock;
+	/*
+	 * 'cmd_fd' is used in those mocks as a node number:
+	 *  = 0 - server
+	 *  > 0 - client number
+	 */
+	Verbs_ibv_context.cmd_fd = Node_index;
+
+	/*
+	 * 'device' is not used in those mocks.
+	 * It is set and used only for debugging,
+	 * because it is the 1st field,
+	 * so it is the best visible in gdb.
+	 */
+	Verbs_ibv_context.device =
+		(struct ibv_device *)(uintptr_t)(Node_index);
+
 	Verbs_ibv_context.ops.poll_cq = ibv_poll_cq_mock;
+	Verbs_ibv_context.ops.post_send = ibv_post_send_mock;
+	Verbs_ibv_context.ops.post_recv = ibv_post_recv_mock;
+	Verbs_ibv_context.ops.req_notify_cq = ibv_req_notify_cq_mock;
+
+	Nodes[Node_index].index = Node_index;
+	Nodes[Node_index].ibv_context = &Verbs_ibv_context;
 
 	return 0;
 }
@@ -97,27 +159,28 @@ ibv_create_cq(struct ibv_context *context, int cqe, void *cq_context,
 		return NULL;
 	}
 
-	struct cq_wcs_s *cq_wcs = calloc(1, sizeof(*cq_wcs));
-	if (cq_wcs == NULL) {
+	struct cq_ctx_s *cq_ctx = calloc(1, sizeof(*cq_ctx));
+	if (cq_ctx == NULL) {
 		perror("calloc");
 		goto err_free_cq;
 	}
 
-	cq_wcs->wcs = calloc((size_t)cqe, sizeof(*cq_wcs->wcs));
-	if (cq_wcs->wcs == NULL) {
+	cq_ctx->n_wcs = cqe;
+	cq_ctx->wcs = calloc((size_t)cq_ctx->n_wcs, sizeof(*cq_ctx->wcs));
+	if (cq_ctx->wcs == NULL) {
 		perror("calloc");
-		goto err_free_cq_wcs;
+		goto err_free_cq_queues;
 	}
 
-	cq->cq_context = cq_wcs;
+	cq->cq_context = cq_ctx;
 	cq->channel = channel;
 	cq->context = context;
 	cq->cqe = cqe;
 
 	return cq;
 
-err_free_cq_wcs:
-	free(cq_wcs);
+err_free_cq_queues:
+	free(cq_ctx);
 
 err_free_cq:
 	free(cq);
@@ -133,9 +196,9 @@ ibv_destroy_cq(struct ibv_cq *cq)
 {
 	TRACE_DO_NOT_FAIL(OP_PASS);
 
-	struct cq_wcs_s *cq_wcs = (struct cq_wcs_s *)cq->cq_context;
-	free(cq_wcs->wcs);
-	free(cq_wcs);
+	struct cq_ctx_s *cq_ctx = (struct cq_ctx_s *)cq->cq_context;
+	free(cq_ctx->wcs);
+	free(cq_ctx);
 	free(cq);
 
 	return 0;
@@ -553,16 +616,37 @@ rdma_create_qp(struct rdma_cm_id *id, struct ibv_pd *pd,
 	assert_int_equal(qp_init_attr->sq_sig_all, 0);
 
 	struct ibv_qp *qp = calloc(1, sizeof(*id->qp));
-	if (qp == NULL)
+	if (qp == NULL) {
+		perror("calloc");
 		return -1;
+	}
 
-	qp->context = id->verbs;
+	struct qp_ctx_s *qp_ctx = calloc(1, sizeof(*qp_ctx));
+	if (qp_ctx == NULL) {
+		perror("calloc");
+		free(qp);
+		return -1;
+	}
+
+	qp_ctx->recv_queue.n_sges = (int)qp_init_attr->cap.max_recv_wr;
+	qp_ctx->recv_queue.rq_items = calloc((size_t)qp_ctx->recv_queue.n_sges,
+				sizeof(*qp_ctx->recv_queue.rq_items));
+	if (qp_ctx->recv_queue.rq_items == NULL) {
+		perror("calloc");
+		free(qp_ctx);
+		free(qp);
+		return -1;
+	}
+
+	qp->qp_context = qp_ctx;
 	qp->send_cq = qp_init_attr->send_cq;
 	qp->recv_cq = qp_init_attr->recv_cq;
 	qp->srq = qp_init_attr->srq;
 	qp->qp_type = qp_init_attr->qp_type;
+	qp->context = id->verbs;
 
 	id->qp = qp;
+	Nodes[Node_index].qp = qp;
 
 	return 0;
 }
@@ -574,7 +658,16 @@ void
 rdma_destroy_qp(struct rdma_cm_id *id)
 {
 	TRACE_DO_NOT_FAIL(OP_PASS);
+
+	if (id->qp->qp_context) {
+		struct qp_ctx_s *qp_ctx = id->qp->qp_context;
+		free(qp_ctx->recv_queue.rq_items);
+		free(id->qp->qp_context);
+	}
+
 	free(id->qp);
+	id->qp = NULL;
+	Nodes[Node_index].qp = NULL;
 }
 
 /*
@@ -794,7 +887,7 @@ int
 rdma_reject(struct rdma_cm_id *id, const void *private_data,
 		uint8_t private_data_len)
 {
-	TRACE_RET(OP_ABORT, -1);
+	TRACE_RET(OP_FAIL, -1);
 	return -1;
 }
 
@@ -824,6 +917,86 @@ rdma_resolve_route(struct rdma_cm_id *id, int timeout_ms)
 }
 
 /*
+ * util_send_CQ -- send completion
+ */
+static int
+util_send_CQ(struct ibv_cq *cq, struct ibv_send_wr *wr, uint64_t wr_id,
+		enum ibv_wc_opcode opcode, uint32_t byte_len)
+{
+	struct cq_ctx_s *cq_ctx;
+	cq_ctx = (struct cq_ctx_s *)cq->cq_context;
+
+	int new_write = (cq_ctx->i_write + 1) % cq_ctx->n_wcs;
+	if (new_write == cq_ctx->i_read) {
+		log_err("cannot send completion, CQ is full");
+		return ENOBUFS;
+	}
+
+	/* set WC */
+	struct ibv_wc *wc = &cq_ctx->wcs[cq_ctx->i_write];
+	cq_ctx->i_write = new_write;
+
+	/* new values */
+	wc->wr_id = wr_id;
+	wc->opcode = opcode;
+	wc->byte_len = byte_len;
+
+	/* copied values */
+	wc->wc_flags = wr->send_flags;
+	wc->imm_data = wr->imm_data;
+	wc->status = IBV_WC_SUCCESS;
+
+	/* send completion - it will be read in ibv_get_cq_event() */
+	log_info("sending CQ completion ..."); /* = CQ pointer */
+	ssize_t n_bytes = write(cq->channel->fd, &cq, sizeof(cq));
+	if ((size_t)n_bytes < sizeof(cq)) {
+		log_err("sending CQ completion failed");
+		return EIO;
+	}
+
+	return 0;
+}
+
+/*
+ * util_do_send_recv -- do send and finish receive
+ */
+static int
+util_do_send_recv(struct ibv_send_wr *wr, enum ibv_wc_opcode opcode,
+			uint32_t *byte_len)
+{
+	/* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
+	/* XXX valid only for only one client! XXX */
+	/* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
+
+	/* get QP context of another node */
+	int another_node = (Node_index + 1) % 2;
+	struct ibv_qp *QP_AN = Nodes[another_node].qp;
+
+	struct qp_ctx_s *qp_ctx = QP_AN->qp_context;
+	struct recv_queue_s *recv_queue = &qp_ctx->recv_queue;
+	if (recv_queue->i_send == recv_queue->i_recv) {
+		log_err("RQ is empty!");
+		return ENOBUFS;
+	}
+
+	struct rqi_s *rqi = &recv_queue->rq_items[recv_queue->i_send];
+	recv_queue->i_send =
+		(recv_queue->i_send + 1) % recv_queue->n_sges;
+
+	assert_non_null(rqi->sge.addr);
+	*byte_len = MIN(wr->sg_list->length, rqi->sge.length);
+	memcpy((void *)rqi->sge.addr, (void *)wr->sg_list->addr,
+		*byte_len);
+
+	int ret;
+	if ((ret = util_send_CQ(QP_AN->recv_cq, wr, rqi->wr_id,
+				opcode, *byte_len)))
+		return ret;
+
+	return 0;
+}
+
+/*
  * ibv_post_send_mock -- mock of ibv_post_send()
  */
 static int
@@ -837,23 +1010,46 @@ ibv_post_send_mock(struct ibv_qp *qp, struct ibv_send_wr *wr,
 	assert_null(wr->next);
 	assert_non_null(wr->sg_list);
 	assert_non_null(wr->sg_list->addr);
-	assert_non_null(wr->wr.rdma.remote_addr);
 	assert_non_null(bad_wr);
 
 	enum ibv_wc_opcode opcode;
+	uint32_t byte_len;
+	int ret;
+
 	switch (wr->opcode) {
 	case IBV_WR_RDMA_READ:
 		opcode = IBV_WC_RDMA_READ;
+		assert_non_null(wr->wr.rdma.remote_addr);
 		memcpy((void *)wr->sg_list->addr,
 			(void *)wr->wr.rdma.remote_addr, wr->sg_list->length);
+		byte_len = wr->sg_list->length;
 		break;
 	case IBV_WR_RDMA_WRITE:
 		opcode = IBV_WC_RDMA_WRITE;
+		assert_non_null(wr->wr.rdma.remote_addr);
 		memcpy((void *)wr->wr.rdma.remote_addr,
 			(void *)wr->sg_list->addr, wr->sg_list->length);
+		byte_len = wr->sg_list->length;
+		break;
+	case IBV_WR_RDMA_WRITE_WITH_IMM:
+		opcode = IBV_WC_RDMA_WRITE;
+		assert_non_null(wr->wr.rdma.remote_addr);
+		memcpy((void *)wr->wr.rdma.remote_addr,
+			(void *)wr->sg_list->addr, wr->sg_list->length);
+		/* byte_len will be set by util_do_send_recv() */
+		if ((ret = util_do_send_recv(wr, IBV_WC_RECV_RDMA_WITH_IMM,
+						&byte_len)))
+			return ret;
+		break;
+	case IBV_WR_SEND:
+	case IBV_WR_SEND_WITH_IMM:
+		opcode = IBV_WC_SEND;
+		/* byte_len will be set by util_do_send_recv() */
+		if ((ret = util_do_send_recv(wr, IBV_WC_RECV, &byte_len)))
+			return ret;
 		break;
 	default:
-		log_err("unsupported opcode");
+		log_err("unsupported opcode\n");
 		return -1;
 	}
 
@@ -863,32 +1059,7 @@ ibv_post_send_mock(struct ibv_qp *qp, struct ibv_send_wr *wr,
 	}
 
 	/* RPMA_F_COMPLETION_ALWAYS */
-	struct cq_wcs_s *cq_wcs = (struct cq_wcs_s *)qp->send_cq->cq_context;
-
-	if (cq_wcs->i_wc >= qp->send_cq->cqe) {
-		log_err("send CQ is full");
-		errno = ENOBUFS;
-		return -1;
-	}
-
-	struct ibv_wc *wc = &cq_wcs->wcs[cq_wcs->i_wc++];
-	wc->opcode = opcode;
-	wc->wr_id = wr->wr_id;
-	wc->byte_len = wr->sg_list->length;
-	wc->wc_flags = wr->send_flags;
-	wc->imm_data = wr->imm_data;
-	wc->status = IBV_WC_SUCCESS;
-
-	/* send completion (CQ event) - it will be read in ibv_get_cq_event() */
-	log_info("sending CQ event ..."); /* = CQ pointer */
-	ssize_t n_bytes = write(qp->send_cq->channel->fd, &qp->send_cq,
-			sizeof(qp->send_cq));
-	if ((size_t)n_bytes < sizeof(qp->send_cq)) {
-		errno = EIO;
-		return -1;
-	}
-
-	return 0;
+	return util_send_CQ(qp->send_cq, wr, wr->wr_id, opcode, byte_len);
 }
 
 /*
@@ -902,16 +1073,51 @@ ibv_poll_cq_mock(struct ibv_cq *cq, int num_entries, struct ibv_wc *wc)
 	assert_int_equal(num_entries, 1);
 	assert_non_null(wc);
 
-	struct cq_wcs_s *cq_wcs = (struct cq_wcs_s *)cq->cq_context;
+	struct cq_ctx_s *cq_ctx = (struct cq_ctx_s *)cq->cq_context;
 
-	if (cq_wcs->i_wc == 0) {
+	if (cq_ctx->i_read == cq_ctx->i_write) {
 		log_err("CQ is empty");
 		return 0;
 	}
 
-	struct ibv_wc *cq_wc = &cq_wcs->wcs[--cq_wcs->i_wc];
+	struct ibv_wc *cq_wc = &cq_ctx->wcs[cq_ctx->i_read];
+	cq_ctx->i_read = (cq_ctx->i_read + 1) % cq_ctx->n_wcs;
 
 	memcpy(wc, cq_wc, sizeof(*wc));
 
 	return num_entries;
+}
+
+/*
+ * ibv_post_recv_mock -- mock of ibv_post_recv()
+ */
+static int
+ibv_post_recv_mock(struct ibv_qp *qp, struct ibv_recv_wr *wr,
+			struct ibv_recv_wr **bad_wr)
+{
+	TRACE_RET(OP_PASS, -1);
+
+	assert_non_null(qp);
+	assert_non_null(wr);
+	assert_null(wr->next);
+	assert_non_null(wr->sg_list);
+	assert_non_null(wr->sg_list->addr);
+	assert_non_null(bad_wr);
+
+	struct qp_ctx_s *qp_ctx = qp->qp_context;
+	struct recv_queue_s *recv_queue = &qp_ctx->recv_queue;
+
+	int new_recv = (recv_queue->i_recv + 1) % recv_queue->n_sges;
+	if (new_recv == recv_queue->i_send) {
+		log_err("RQ is full");
+		return ENOBUFS;
+	}
+
+	struct rqi_s *rqi = &recv_queue->rq_items[recv_queue->i_recv];
+	recv_queue->i_recv = new_recv;
+
+	rqi->wr_id = wr->wr_id;
+	memcpy(&rqi->sge, wr->sg_list, sizeof(rqi->sge));
+
+	return 0;
 }

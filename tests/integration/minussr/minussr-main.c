@@ -19,10 +19,11 @@
 #define SERVER		0
 #define CLIENT		1
 
-#define ARGC		4
+#define ARGC		5
 #define MOCK_ADDR	"192.168.0.0"
 #define MOCK_PORT	"7204"
 #define MOCK_SEED	"1234"
+#define MOCK_ROUNDS	"3"
 
 int client_main(int argc, char *argv[]);
 int server_main(int argc, char *argv[]);
@@ -36,8 +37,8 @@ struct pthread_args {
 };
 
 static char *argvs[][ARGC] = {
-	{"server", MOCK_ADDR, MOCK_PORT, ""},
-	{"client", MOCK_ADDR, MOCK_PORT, MOCK_SEED},
+	{"server", MOCK_ADDR, MOCK_PORT, "", ""},
+	{"client", MOCK_ADDR, MOCK_PORT, MOCK_SEED, MOCK_ROUNDS},
 };
 
 static struct pthread_args threads_args[] = {
