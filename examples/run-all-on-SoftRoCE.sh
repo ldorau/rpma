@@ -29,7 +29,7 @@ if [ x"$VLD_TEST" == x"--valgrind" ]; then
 	VLD_CMD="valgrind --leak-check=yes"
 	VLD_SUPP_PATH=$(dirname $0)/../tests/
 	VLD_SUPP="--suppressions=${VLD_SUPP_PATH}/memcheck-libibverbs.supp"
-	VLD_SUPP="${VLD_SUPP} --suppressions=${VLD_SUPP_PATH}/memcheck-libnl.supp"
+	VLD_SUPP="${VLD_SUPP} --suppressions=${VLD_SUPP_PATH}/memcheck-libnl.supp --gen-suppressions=all"
 	# prepare the server command
 	VLD_SLOG_FILE="${BIN_DIR}/valgrind-server.log"
 	VLD_SLOG="--log-file=${VLD_SLOG_FILE}"
