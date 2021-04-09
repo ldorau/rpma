@@ -124,6 +124,12 @@ function run_example() {
 			echo "Error: example $EXAMPLE client $VLD_MSG FAILED!"
 			N_CFAILED=$(($N_CFAILED + 1))
 			CFAILED="${CFAILED}${EXAMPLE}-client\n"
+			echo "=================================================="
+			echo "=== $EXAMPLE-valgrind-client.log ==="
+			echo "=================================================="
+			cat ${VLD_CLOG_FILE}
+			echo "=================================================="
+			echo
 			mv ${VLD_CLOG_FILE} ${BIN_DIR}/$EXAMPLE-valgrind-client.log
 		fi
 	fi
@@ -143,6 +149,12 @@ function run_example() {
 			echo "Error: example $EXAMPLE server $VLD_MSG FAILED!"
 			N_SFAILED=$(($N_SFAILED + 1))
 			SFAILED="${SFAILED}${EXAMPLE}-server\n"
+			echo "=================================================="
+			echo "=== $EXAMPLE-valgrind-server.log ==="
+			echo "=================================================="
+			cat ${VLD_SLOG_FILE}
+			echo "=================================================="
+			echo
 			mv ${VLD_SLOG_FILE} ${BIN_DIR}/$EXAMPLE-valgrind-server.log
 		fi
 	fi
