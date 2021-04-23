@@ -19,6 +19,10 @@
 #define FLUSH_ID	(void *)0xF01D /* a random identifier */
 #define KILOBYTE	1024
 
+#define DEBUG_ERR(func, ret) \
+	fprintf(stderr, "[%s:%i] %s failed (%i)\n", \
+		__FILE__, __LINE__, func, ret);
+
 int
 main(int argc, char *argv[])
 {
@@ -111,16 +115,22 @@ main(int argc, char *argv[])
 
 	/* try to get a completion */
 	ret = rpma_conn_completion_get(conn, &cmpl);
-	if (ret && ret != RPMA_E_NO_COMPLETION)
+	if (ret && ret != RPMA_E_NO_COMPLETION) {
+		DEBUG_ERR("rpma_conn_completion_get", ret);
 		goto err_mr_remote_delete;
+	}
 
 	if (ret == RPMA_E_NO_COMPLETION) {
 		/* wait for the completion to be ready */
-		if ((ret = rpma_conn_completion_wait(conn)))
+		if ((ret = rpma_conn_completion_wait(conn))) {
+			DEBUG_ERR("rpma_conn_completion_wait", ret);
 			goto err_mr_remote_delete;
+		}
 
-		if ((ret = rpma_conn_completion_get(conn, &cmpl)))
+		if ((ret = rpma_conn_completion_get(conn, &cmpl))) {
+			DEBUG_ERR("rpma_conn_completion_get", ret);
 			goto err_mr_remote_delete;
+		}
 	}
 
 	if (cmpl.op_status != IBV_WC_SUCCESS) {
@@ -179,15 +189,21 @@ main(int argc, char *argv[])
 
 		/* try to get a completion */
 		ret = rpma_conn_completion_get(conn, &cmpl);
-		if (ret && ret != RPMA_E_NO_COMPLETION)
+		if (ret && ret != RPMA_E_NO_COMPLETION) {
+			DEBUG_ERR("rpma_conn_completion_get", ret);
 			break;
+		}
 
 		if (ret == RPMA_E_NO_COMPLETION) {
 			/* wait for the completion to be ready */
-			if ((ret = rpma_conn_completion_wait(conn)))
+			if ((ret = rpma_conn_completion_wait(conn))) {
+				DEBUG_ERR("rpma_conn_completion_wait", ret);
 				break;
-			else if ((ret = rpma_conn_completion_get(conn, &cmpl)))
+			} else if ((ret = rpma_conn_completion_get(
+							conn, &cmpl))) {
+				DEBUG_ERR("rpma_conn_completion_get", ret);
 				break;
+			}
 		}
 
 		if (cmpl.op_context != FLUSH_ID) {

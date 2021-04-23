@@ -19,6 +19,10 @@
 #include "cmocka_alloc.h"
 #endif
 
+#define DEBUG_ERR(func, ret) \
+	fprintf(stderr, "[%s:%i] %s failed (%i)\n", \
+		__FILE__, __LINE__, func, ret);
+
 struct rpma_conn {
 	struct rdma_cm_id *id; /* a CM ID of the connection */
 	struct rdma_event_channel *evch; /* event channel of the CM ID */
@@ -506,8 +510,11 @@ rpma_conn_completion_wait(struct rpma_conn *conn)
 	/* wait for the completion event */
 	struct ibv_cq *ev_cq;	/* unused */
 	void *ev_ctx;		/* unused */
-	if (ibv_get_cq_event(conn->channel, &ev_cq, &ev_ctx))
+	int ret;
+	if ((ret = ibv_get_cq_event(conn->channel, &ev_cq, &ev_ctx))) {
+		DEBUG_ERR("ibv_get_cq_event", ret);
 		return RPMA_E_NO_COMPLETION;
+	}
 
 	/*
 	 * ACK the collected CQ event.
@@ -522,6 +529,7 @@ rpma_conn_completion_wait(struct rpma_conn *conn)
 			0 /* all completions */);
 	if (errno) {
 		RPMA_LOG_ERROR_WITH_ERRNO(errno, "ibv_req_notify_cq()");
+		DEBUG_ERR("ibv_req_notify_cq", errno);
 		return RPMA_E_PROVIDER;
 	}
 
@@ -545,15 +553,18 @@ rpma_conn_completion_get(struct rpma_conn *conn,
 		 * There may be an extra CQ event with no completion in the CQ.
 		 */
 		RPMA_LOG_DEBUG("No completion in the CQ");
+		DEBUG_ERR("ibv_poll_cq", RPMA_E_NO_COMPLETION);
 		return RPMA_E_NO_COMPLETION;
 	} else if (result < 0) {
 		/* ibv_poll_cq() may return only -1; no errno provided */
 		RPMA_LOG_ERROR("ibv_poll_cq() failed (no details available)");
+		DEBUG_ERR("ibv_poll_cq", result);
 		return RPMA_E_PROVIDER;
 	} else if (result > 1) {
 		RPMA_LOG_ERROR(
 			"ibv_poll_cq() returned %d where 0 or 1 is expected",
 			result);
+		DEBUG_ERR("ibv_poll_cq", result);
 		return RPMA_E_UNKNOWN;
 	}
 
@@ -575,6 +586,7 @@ rpma_conn_completion_get(struct rpma_conn *conn,
 		break;
 	default:
 		RPMA_LOG_ERROR("unsupported wc.opcode == %d", wc.opcode);
+		DEBUG_ERR("unsupported wc.opcode", wc.opcode);
 		return RPMA_E_NOSUPP;
 	}
 
