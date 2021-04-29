@@ -48,3 +48,308 @@
    fun:ucma_init
    ...
 }
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:insert_cma_dev
+   fun:sync_devices_list
+   fun:ucma_init
+   fun:rdma_getaddrinfo
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:ucma_init_device
+   fun:ucma_get_device
+   fun:ucma_query_addr
+   fun:rdma_bind_addr2
+   fun:rdma_bind_addr
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:rdma_destroy_id
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   close(fd)
+   fun:close
+   fun:ibv_destroy_comp_channel
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ibv_cmd_destroy_cq
+   fun:rxe_destroy_cq
+   fun:ibv_destroy_cq@@IBVERBS_1.1
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ibv_cmd_destroy_qp
+   fun:rxe_destroy_qp
+   fun:ibv_destroy_qp@@IBVERBS_1.1
+   fun:rdma_destroy_qp
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   read(fd)
+   fun:read
+   fun:ibv_get_cq_event@@IBVERBS_1.1
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   fun:write
+   fun:rdma_accept
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ibv_modify_qp@@IBVERBS_1.1
+   fun:ucma_modify_qp_rts
+   fun:rdma_accept
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ibv_modify_qp@@IBVERBS_1.1
+   fun:ucma_modify_qp_rts
+   fun:rdma_accept
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ucma_modify_qp_rts
+   fun:rdma_accept
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ibv_modify_qp@@IBVERBS_1.1
+   fun:ucma_modify_qp_rtr
+   fun:rdma_accept
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ibv_cmd_modify_qp
+   fun:rxe_modify_qp
+   fun:ibv_modify_qp@@IBVERBS_1.1
+   fun:ucma_modify_qp_rts
+   fun:rdma_accept
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ibv_cmd_modify_qp
+   fun:rxe_modify_qp
+   fun:ibv_modify_qp@@IBVERBS_1.1
+   fun:ucma_modify_qp_rtr
+   fun:rdma_accept
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ucma_remove_id
+   fun:ucma_free_id
+   fun:rdma_destroy_id
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   fun:write
+   fun:ucma_destroy_kern_id
+   fun:rdma_destroy_id
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ibv_reg_mr_iova2
+   fun:__ibv_reg_mr
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ucma_modify_qp_rtr
+   fun:rdma_accept
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:ucma_modify_qp_rtr
+   fun:rdma_accept
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ibv_modify_qp@@IBVERBS_1.1
+   fun:ucma_init_conn_qp
+   fun:rdma_create_qp_ex
+   fun:rdma_create_qp
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:copy_modify_qp_fields
+   fun:ibv_cmd_modify_qp
+   fun:rxe_modify_qp
+   fun:ibv_modify_qp@@IBVERBS_1.1
+   fun:ucma_init_conn_qp
+   fun:rdma_create_qp_ex
+   fun:rdma_create_qp
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ibv_cmd_modify_qp
+   fun:rxe_modify_qp
+   fun:ibv_modify_qp@@IBVERBS_1.1
+   fun:ucma_init_conn_qp
+   fun:rdma_create_qp_ex
+   fun:rdma_create_qp
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:fill_attr_in_fd
+   fun:ibv_icmd_create_cq
+   fun:ibv_cmd_create_cq
+   fun:rxe_create_cq
+   fun:ibv_create_cq@@IBVERBS_1.1
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ucma_query_path
+   fun:ucma_query_req_info
+   fun:ucma_process_conn_req
+   fun:rdma_get_cm_event
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:malloc
+   fun:ucma_query_path
+   fun:ucma_query_req_info
+   fun:ucma_process_conn_req
+   fun:rdma_get_cm_event
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:memcpy@GLIBC_2.2.5
+   fun:ucma_query_addr
+   fun:ucma_query_req_info
+   fun:ucma_process_conn_req
+   fun:rdma_get_cm_event
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:memcpy@GLIBC_2.2.5
+   fun:ucma_query_addr
+   fun:rdma_listen
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   fun:write
+   fun:rdma_listen
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ucma_init_device
+   fun:ucma_get_device
+   fun:ucma_query_addr
+   fun:rdma_bind_addr2
+   fun:rdma_bind_addr
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ucma_query_addr
+   fun:ucma_query_req_info
+   fun:ucma_process_conn_req
+   fun:rdma_get_cm_event
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   fun:write
+   fun:ucma_query_addr
+   fun:rdma_listen
+   ...
+}

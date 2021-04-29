@@ -190,7 +190,7 @@ CFAILED=""
 
 for srv in $(find $BIN_DIR -name server | sort); do
 	DIR=$(dirname $srv)
-	run_example $DIR
+	run_example $DIR || exit 1
 done
 
 if [ $N_FAILED -gt 0 ]; then
