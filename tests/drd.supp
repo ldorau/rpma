@@ -384,3 +384,16 @@
    fun:rpma_ep_shutdown
    ...
 }
+
+{
+   Mutex not locked
+   drd:MutexErr
+   fun:pthread_spin_init_intercept
+   fun:pthread_spin_init
+   fun:rxe_create_qp
+   fun:ibv_create_qp@@IBVERBS_1.1
+   fun:ibv_create_qp_ex
+   fun:rdma_create_qp_ex
+   fun:rdma_create_qp
+   ...
+}
