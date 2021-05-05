@@ -26,38 +26,7 @@ jobs:
       fail-fast: false
       matrix:
         CONFIG: [
-                 "N=CentOS8      OS=centos  OS_VER=8",
-                 "N=CentOS7      OS=centos  OS_VER=7",
-                 "N=CentOS6      OS=centos  OS_VER=6",
-                 "N=Debian9      OS=debian  OS_VER=9",
-                 "N=OpenSUSE_Leap        OS=opensuse-leap        OS_VER=latest"]
-    steps:
-       - name: Clone the git repo
-         uses: actions/checkout@v1
-
-       - name: Pull or rebuild the image
-         run: cd $WORKDIR && ${{ matrix.CONFIG }} ./pull-or-rebuild-image.sh
-
-       - name: Run the build
-         run: cd $WORKDIR && ${{ matrix.CONFIG }} ./build.sh
-
-       - name: Push the image
-         run: cd $WORKDIR && source ./set-vars.sh && ${{ matrix.CONFIG }} /bin/bash -c "if [[ -f ${CI_FILE_PUSH_IMAGE_TO_REPO} ]]; then images/push-image.sh; fi"
-
-  clang:
-    name: Clang
-    runs-on: ubuntu-latest
-    env:
-       CC: clang
-    strategy:
-      fail-fast: false
-      matrix:
-        CONFIG: [
-                 "N=CentOS8      OS=centos  OS_VER=8",
-                 "N=CentOS7      OS=centos  OS_VER=7",
-                 "N=CentOS6      OS=centos  OS_VER=6",
-                 "N=Debian9      OS=debian  OS_VER=9",
-                 "N=OpenSUSE_Leap        OS=opensuse-leap        OS_VER=latest"]
+                 "N=Debian9      OS=debian  OS_VER=9"]
     steps:
        - name: Clone the git repo
          uses: actions/checkout@v1
