@@ -33,6 +33,7 @@ ENV BASE_DEPS "\
 	whois"
 
 ENV TOOLS_DEPS "\
+	file \
 	python3-jinja2"
 
 ENV TESTS_DEPS "\
