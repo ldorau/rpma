@@ -57,6 +57,9 @@ prestate_init(void *prestate, sem_t **sems, struct mtt_result *tr)
 		goto err_peer_delete;
 	}
 
+	/* wait for the server to start */
+	sem_wait(*sems);
+
 	/* connect the connection request and obtain the connection object */
 	ret = rpma_conn_req_connect(&req, NULL, &pr->conn);
 	if (ret) {
@@ -170,7 +173,7 @@ struct server_prestate {
 /*
  * server_main -- the main function of the server
  */
-int server_main(char *addr, unsigned port);
+int server_main(char *addr, unsigned port, sem_t **sems);
 
 /*
  * server_func -- the server function of this test
@@ -179,7 +182,7 @@ int
 server_func(void *prestate, sem_t **sems)
 {
 	struct server_prestate *pst = prestate;
-	return server_main(pst->addr, pst->port);
+	return server_main(pst->addr, pst->port, sems);
 }
 
 int
@@ -206,5 +209,5 @@ main(int argc, char *argv[])
 			&server_prestate
 	};
 
-	return mtt_run(&test, args.threads_num, 0);
+	return mtt_run(&test, args.threads_num, 1);
 }

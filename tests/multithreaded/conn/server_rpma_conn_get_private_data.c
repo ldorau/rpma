@@ -87,7 +87,7 @@ common_wait_for_conn_close_and_disconnect(struct rpma_conn **conn_ptr)
 }
 
 int
-server_main(char *addr, unsigned port)
+server_main(char *addr, unsigned port, sem_t **sems)
 {
 	struct ibv_context *dev = NULL;
 	struct rpma_peer *peer = NULL;
@@ -120,6 +120,9 @@ server_main(char *addr, unsigned port)
 		SERVER_RPMA_ERR("rpma_ep_listen", ret);
 		goto err_peer_delete;
 	}
+
+	/* unblock the client */
+	sem_post(*sems);
 
 	struct rpma_conn_private_data pdata;
 	pdata.ptr = (void *)data;
