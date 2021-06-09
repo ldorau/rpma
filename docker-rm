@@ -1,0 +1,8 @@
+#!/bin/bash
+
+CTS=$(sudo docker ps -a | grep -e Exited -e Created | cut -d' ' -f1 | xargs)
+if [ "$CTS" != "" ]; then
+	echo "Removing containers: $CTS"
+	echo -n "Removed: "
+	sudo docker rm $CTS | xargs
+fi
