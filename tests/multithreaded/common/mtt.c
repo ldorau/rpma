@@ -5,14 +5,17 @@
  * mtt.c -- a multithreaded tests' runner
  */
 
+#define _GNU_SOURCE /* for asprintf() */
+#include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include <librpma.h>
 
@@ -46,18 +49,54 @@ struct mtt_thread_args {
 		&(thread_args)->state, (thread_args)->sems, (result))
 
 /*
+ * mtt_semaphores_name_create -- XXX
+ */
+static char *
+mtt_semaphores_name_create(unsigned index)
+{
+	char *name;
+	int ret;
+
+	ret = asprintf(&name, "/semaphore-pid%i-addr%p-%i",
+			getpid(), &mtt_semaphores_name_create, index);
+	if (ret == -1)
+		return NULL; /* XXX add error message */
+
+	return name;
+}
+
+/*
+ * mtt_semaphores_name_delete -- XXX
+ */
+static inline void
+mtt_semaphores_name_delete(char *name)
+{
+	free(name);
+}
+
+/*
  * mtt_semaphores_open -- XXX
  */
 static sem_t **
 mtt_semaphores_open(unsigned sems_num)
 {
-	/*
-	 * XXX use sem_open() in a for-loop
-	 * XXX names of the semaphores have to be generated at runtime
-	 * preferably in a way guaranteeing its uniqueness for a given MT test
-	 */
+	unsigned i;
 
-	return NULL;
+	sem_t **sems = calloc(sems_num, sizeof(*sems));
+	if (sems == NULL)
+		return NULL; /* XXX add error message */
+
+	for (i = 0; i < sems_num; i++) {
+		char *name = mtt_semaphores_name_create(i);
+		sems[i] = sem_open(name, O_CREAT, O_RDWR, 0);
+		mtt_semaphores_name_delete(name);
+		if (sems[i] == SEM_FAILED) {
+			perror("sem_open");
+			return NULL; /* XXX add error message */
+		}
+	}
+
+	return sems;
 }
 
 /*
@@ -66,9 +105,27 @@ mtt_semaphores_open(unsigned sems_num)
 static int
 mtt_semaphores_close(sem_t **sems, unsigned sems_num)
 {
+	unsigned i;
+
+	sem_t **sems = calloc(sems_num, sizeof(*sems));
+	if (sems == NULL)
+		return NULL; /* XXX add error message */
+
+	for (i = 0; i < sems_num; i++) {
+		char *name = mtt_semaphores_name_create(i);
+		sems[i] = sem_open(name, O_CREAT, O_RDWR, 0);
+		mtt_semaphores_name_delete(name);
+		if (sems[i] == SEM_FAILED) {
+			perror("sem_open");
+			return NULL; /* XXX add error message */
+		}
+	}
 	/*
 	 * XXX use sem_close() in a for-loop
 	 */
+
+	sem_close(*sems);
+	sem_unlink("/name1234");
 
 	return 0;
 }
