@@ -101,7 +101,7 @@ class Benchmark:
         if 'rw' in self.oneseries.keys():
             args.append(self.oneseries['rw'])
         args.append(self.oneseries['mode'])
-        return args
+        return [ 'echo', 'XXX_benchmark_args']
 
     def run(self, config, result_dir):
         args = self._benchmark_args(config)
