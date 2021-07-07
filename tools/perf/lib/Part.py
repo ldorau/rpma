@@ -27,6 +27,9 @@ class Part:
             common (dict): a map of common variables reused across the template
                 variables
         """
+        print("---------")
+        print("variables")
+        print(variables)
         for k, v in variables.items():
             if isinstance(v, list):
                 variables[k] = lines2str(v)
@@ -40,7 +43,13 @@ class Part:
                     self._process_variables_level(v, common)
             # replace common
             if isinstance(variables[k], str):
+                print("common")
+                print(common)
+                print("variables[k]-1")
+                print(variables[k])
                 variables[k] = variables[k].format(**common)
+                print("variables[k]-2")
+                print(variables[k])
 
     def _load_variables(self, loader):
         """Populate self.variables with resources required to render
@@ -61,6 +70,8 @@ class Part:
 
         # generate HTML tables dict2kvtable()
         # - take into account the variables['common']
+        print("common")
+        print(common)
         self._process_variables_level(variables, common)
 
         self.variables = variables
