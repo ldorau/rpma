@@ -130,6 +130,7 @@ function test_compile_all_examples_standalone() {
 
 function run_pytest() {
 	# find pytest
+	set -x
 	PYTESTS="pytest pytest3 pytest-3"
 	for bin in $PYTESTS; do
 		which $bin && export PYTEST=$(which $bin) && break
@@ -139,6 +140,7 @@ function run_pytest() {
 		echo
 		echo "ERROR: pytest not found"
 		echo
+		ls -al /usr/bin/pytest*
 		exit 1
 	fi
 
