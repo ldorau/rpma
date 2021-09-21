@@ -32,7 +32,7 @@
                 "numjobs=$numjobs",
                 "group_reporting=1",
                 "iodepth=2",
-                "readwrite={randread, randwrite}",
+                "readwrite={{randread, randwrite}}",
                 "blocksize=$blocksize",
                 "ramp_time=15",
                 "time_based",
