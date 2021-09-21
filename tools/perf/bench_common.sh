@@ -226,10 +226,15 @@ function set_ddio()
 			fi
 		fi
 		REMOTE_DIRECT_WRITE_TO_PMEM=$REQUIRED_REMOTE_DIRECT_WRITE_TO_PMEM
-	elif [ $REMOTE_DIRECT_WRITE_TO_PMEM -ne $REQUIRED_REMOTE_DIRECT_WRITE_TO_PMEM ]; then
-		echo "Error: REMOTE_DIRECT_WRITE_TO_PMEM does not have the required value ($REQUIRED_REMOTE_DIRECT_WRITE_TO_PMEM)"
-		echo "Skipping..."
-		exit 0
+	#
+	# XXX Python does not handle skips correctly and controls
+	# the requirements on its own so this check only prevents
+	# Python from doing its job.
+	#
+	# elif [ $REMOTE_DIRECT_WRITE_TO_PMEM -ne $REQUIRED_REMOTE_DIRECT_WRITE_TO_PMEM ]; then
+	# 	echo "Error: REMOTE_DIRECT_WRITE_TO_PMEM does not have the required value ($REQUIRED_REMOTE_DIRECT_WRITE_TO_PMEM)"
+	# 	echo "Skipping..."
+	# 	exit 0
 	fi
 
 	if [ "$DUMP_CMDS" == "1" ]; then
