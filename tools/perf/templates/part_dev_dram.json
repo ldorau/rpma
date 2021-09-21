@@ -1,0 +1,43 @@
+{
+    "config": {
+        "bw": {
+            "type": "kvtable",
+            "Server": [
+                "[global]",
+                "ioengine=librpma_apm_server",
+                "create_serialize=0",
+                "kb_base=1000",
+                "serverip=$serverip",
+                "port=7204",
+                "thread",
+                "",
+                "[server]",
+                "direct_write_to_pmem=1",
+                "numjobs=1",
+                "size=100MiB",
+                "filename=malloc"
+            ],
+            "Client": [
+                "[global]",
+                "ioengine=librpma_apm_client",
+                "create_serialize=0",
+                "serverip=$serverip",
+                "port=7204",
+                "thread",
+                "disable_clat=1",
+                "lat_percentiles=1",
+                "percentile_list=99.0:99.9:99.99:99.999",
+                "",
+                "[client]",
+                "numjobs=$numjobs",
+                "group_reporting=1",
+                "iodepth=2",
+                "readwrite={randread, randwrite}",
+                "blocksize=$blocksize",
+                "ramp_time=15",
+                "time_based",
+                "runtime=60"
+            ]
+        }
+    }
+}
