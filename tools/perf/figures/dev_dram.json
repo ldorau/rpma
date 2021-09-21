@@ -1,0 +1,142 @@
+[
+    {
+        "output": {
+            "title": "Bandwidth ({x}): DRAM read",
+            "x": "bs",
+            "y": "bw_avg",
+            "file": "dram_read",
+            "key": "bw_{x_key}",
+            "fstrings": ["title", "key"]
+        },
+        "series_common": {
+            "filetype": "malloc",
+            "mode": "bw-bs",
+            "tool": "rpma_fio_bench.sh",
+            "tool_mode": "apm",
+            "rw": "randread"
+        },
+        "series": [
+            {
+                "requirements": {
+                    "_comment": "XXX direct_write_to_pmem does not have its regular meaning it to used only to differentiate two configurations",
+                    "direct_write_to_pmem": false
+                },
+                "_comment": "PCIe Allocating Write Flows",
+                "label": "Allocating + xADR"
+            },
+            {
+                "requirements": {
+                    "_comment": "XXX direct_write_to_pmem does not have its regular meaning it to used only to differentiate two configurations",
+                    "direct_write_to_pmem": true
+                },
+                "_comment": "PCIe Allocating Write Flows",
+                "label": "Non-Allocating"
+            }
+        ]
+    },
+    {
+        "output": {
+            "title": "Bandwidth ({x}): DRAM read",
+            "x": "threads",
+            "y": "bw_avg",
+            "file": "dram_read",
+            "key": "bw_{x_key}",
+            "fstrings": ["title", "key"]
+        },
+        "series_common": {
+            "filetype": "malloc",
+            "mode": "bw-th",
+            "tool": "rpma_fio_bench.sh",
+            "tool_mode": "apm",
+            "rw": "randread"
+        },
+        "series": [
+            {
+                "requirements": {
+                    "_comment": "XXX direct_write_to_pmem does not have its regular meaning it to used only to differentiate two configurations",
+                    "direct_write_to_pmem": false
+                },
+                "_comment": "PCIe Allocating Write Flows",
+                "label": "Allocating + xADR"
+            },
+            {
+                "requirements": {
+                    "_comment": "XXX direct_write_to_pmem does not have its regular meaning it to used only to differentiate two configurations",
+                    "direct_write_to_pmem": true
+                },
+                "_comment": "PCIe Allocating Write Flows",
+                "label": "Non-Allocating"
+            }
+        ]
+    },
+    {
+        "output": {
+            "title": "Bandwidth ({x}): DRAM write",
+            "x": "bs",
+            "y": "bw_avg",
+            "file": "dram_write",
+            "key": "bw_{x_key}",
+            "fstrings": ["title", "key"]
+        },
+        "series_common": {
+            "filetype": "malloc",
+            "mode": "bw-bs",
+            "tool": "rpma_fio_bench.sh",
+            "tool_mode": "apm",
+            "rw": "randwrite"
+        },
+        "series": [
+            {
+                "requirements": {
+                    "_comment": "XXX direct_write_to_pmem does not have its regular meaning it to used only to differentiate two configurations",
+                    "direct_write_to_pmem": false
+                },
+                "_comment": "PCIe Allocating Write Flows",
+                "label": "Allocating + xADR"
+            },
+            {
+                "requirements": {
+                    "_comment": "XXX direct_write_to_pmem does not have its regular meaning it to used only to differentiate two configurations",
+                    "direct_write_to_pmem": true
+                },
+                "_comment": "PCIe Allocating Write Flows",
+                "label": "Non-Allocating"
+            }
+        ]
+    },
+    {
+        "output": {
+            "title": "Bandwidth ({x}): DRAM write",
+            "x": "threads",
+            "y": "bw_avg",
+            "file": "dram_write",
+            "key": "bw_{x_key}",
+            "fstrings": ["title", "key"]
+        },
+        "series_common": {
+            "filetype": "malloc",
+            "mode": "bw-th",
+            "tool": "rpma_fio_bench.sh",
+            "tool_mode": "apm",
+            "rw": "randwrite"
+        },
+        "series": [
+            {
+                "requirements": {
+                    "_comment": "XXX direct_write_to_pmem does not have its regular meaning it to used only to differentiate two configurations",
+                    "direct_write_to_pmem": false
+                },
+                "_comment": "PCIe Allocating Write Flows",
+                "label": "Allocating + xADR"
+            },
+            {
+                "requirements": {
+                    "_comment": "XXX direct_write_to_pmem does not have its regular meaning it to used only to differentiate two configurations",
+                    "direct_write_to_pmem": true
+                },
+                "_comment": "PCIe Allocating Write Flows",
+                "label": "Non-Allocating"
+            }
+        ]
+    }
+]
