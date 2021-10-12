@@ -87,7 +87,7 @@ TOOL_IB_READ = 'ib_read.sh'
 TOOL_RPMA_FIO_BENCH = 'rpma_fio_bench.sh'
 
 @pytest.mark.parametrize('mode',
-    ['bw-bs', 'bw-dp-exp', 'bw-dp-lin', 'bw-th', 'lat'])
+    ['bw-bs', 'bw-bs-32', 'bw-dp-exp', 'bw-dp-lin', 'bw-th', 'lat'])
 def test_ib_read(mode, monkeypatch):
     """test all arguments variants of ib_read.sh"""
     def run_mock(args, env):
@@ -110,7 +110,7 @@ def test_ib_read(mode, monkeypatch):
 @pytest.mark.parametrize('readwrite',
     ['read', 'randread', 'write', 'randwrite', 'rw', 'randrw'])
 @pytest.mark.parametrize('mode',
-    ['bw-bs', 'bw-dp-exp', 'bw-dp-lin', 'bw-th', 'bw-cpu', 'bw-cpu-mt', 'lat',
+    ['bw-bs', 'bw-bs-32', 'bw-dp-exp', 'bw-dp-lin', 'bw-th', 'bw-cpu', 'bw-cpu-mt', 'lat',
         'lat-cpu'])
 def test_rpma_fio_bench(tool_mode, readwrite, mode, monkeypatch):
     """test all arguments variants of rpma_fio_bench.sh"""
@@ -272,7 +272,7 @@ def test_busy_wait_polling(config_busy_wait_polling, busy_wait_polling,
 @pytest.mark.parametrize('readwrite',
     ['read', 'randread', 'write', 'randwrite', 'rw', 'randrw'])
 @pytest.mark.parametrize('mode',
-    ['bw-bs', 'bw-dp-exp', 'bw-dp-lin', 'bw-th', 'bw-cpu', 'bw-cpu-mt', 'lat',
+    ['bw-bs', 'bw-bs-32', 'bw-dp-exp', 'bw-dp-lin', 'bw-th', 'bw-cpu', 'bw-cpu-mt', 'lat',
         'lat-cpu'])
 def test_gpspm_no_busy_wait_polling(readwrite, mode, monkeypatch):
     """filetype=pmem when no REMOTE_JOB_MEM_PATH provided"""
