@@ -70,7 +70,7 @@ function usage()
 	echo "Error: $1"
 	echo
 	if [ "$FILENAME" = "rpma_fio_bench.sh" ]; then
-		echo "Usage: $0 <server_ip> all|apm|gpspm|aof_sw|aof_hw [all|read|randread|write|randwrite|rw|randrw] [all|bw-bs|bw-dp-exp|bw-dp-lin|bw-th|bw-cpu|bw-cpu-mt|lat|lat-cpu]"
+		echo "Usage: $0 <server_ip> all|apm|gpspm|aof_sw|aof_hw [all|read|randread|write|randwrite|rw|randrw] [all|bw-bs|bw-bs-32|bw-dp-exp|bw-dp-lin|bw-th|bw-cpu|bw-cpu-mt|lat|lat-cpu]"
 		echo "       $0 --env - show environment variables used by the script"
 		echo
 		echo "Notes:"
