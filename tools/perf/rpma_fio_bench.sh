@@ -108,6 +108,22 @@ function benchmark_one() {
 		NAME_SUFFIX=bs${BLOCK_SIZE}_dp${DEPTH}
 		SYNC=0
 		;;
+	bw-th-8KiB-32)
+		THREADS=(1 2 4 8 12 16 32)
+		BLOCK_SIZE=8192
+		DEPTH=32
+		ITERATIONS=${#THREADS[@]}
+		NAME_SUFFIX=bs${BLOCK_SIZE}_dp${DEPTH}
+		SYNC=0
+		;;
+	bw-th-1MiB-32)
+		THREADS=(1 2 4 8 12 16 32)
+		BLOCK_SIZE=1048576
+		DEPTH=32
+		ITERATIONS=${#THREADS[@]}
+		NAME_SUFFIX=bs${BLOCK_SIZE}_dp${DEPTH}
+		SYNC=0
+		;;
 	bw-cpu)
 		THREADS=1
 		BLOCK_SIZE=65536
@@ -244,7 +260,7 @@ function benchmark_one() {
 			CPU=0
 			ITER=dp${DP}
 			;;
-		bw-th)
+		bw-th|bw-th-8KiB-32|bw-th-1MiB-32)
 			BS="${BLOCK_SIZE}"
 			TH="${THREADS[${i}]}"
 			DP="${DEPTH}"
@@ -455,7 +471,7 @@ all)
 esac
 
 case $MODES in
-bw-bs|bw-bs-32|bw-dp-exp|bw-dp-lin|bw-th|bw-cpu|bw-cpu-mt|lat|lat-cpu)
+bw-bs|bw-bs-32|bw-dp-exp|bw-dp-lin|bw-th|bw-th-8KiB-32|bw-th-1MiB-32|bw-cpu|bw-cpu-mt|lat|lat-cpu)
 	;;
 all)
 	MODES="lat lat-cpu bw-bs bw-cpu bw-cpu-mt bw-th bw-dp-lin bw-dp-exp"
