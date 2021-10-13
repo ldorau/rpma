@@ -1,0 +1,89 @@
+[
+    {
+        "output": {
+            "title": "Bandwidth ({x}): read",
+            "x": "bs",
+            "y": "bw_avg",
+            "file": "heavy_read",
+            "key": "bw_{x_key}",
+            "fstrings": ["title", "key"]
+        },
+        "series_common": {
+            "rw": "randread",
+            "mode": "bw-bs-32",
+            "tool": "rpma_fio_bench.sh",
+            "tool_mode": "apm",
+            "requirements": {
+                "direct_write_to_pmem": true
+            }
+        },
+        "series": [
+            {
+                "filetype": "malloc",
+                "label": "DRAM"
+            },
+            {
+                "filetype": "pmem",
+                "label": "PMEM"
+            }
+        ]
+    },
+    {
+        "output": {
+            "title": "Bandwidth ({x}): read",
+            "x": "threads",
+            "y": "bw_avg",
+            "file": "heavy_read",
+            "key": "bw_{x_key}_8KiB",
+            "fstrings": ["title", "key"]
+        },
+        "series_common": {
+            "rw": "randread",
+            "mode": "bw-th-8KiB-32",
+            "tool": "rpma_fio_bench.sh",
+            "tool_mode": "apm",
+            "requirements": {
+                "direct_write_to_pmem": true
+            }
+        },
+        "series": [
+            {
+                "filetype": "malloc",
+                "label": "DRAM"
+            },
+            {
+                "filetype": "pmem",
+                "label": "PMEM"
+            }
+        ]
+    },
+    {
+        "output": {
+            "title": "Bandwidth ({x}): read",
+            "x": "threads",
+            "y": "bw_avg",
+            "file": "heavy_read",
+            "key": "bw_{x_key}_1MiB",
+            "fstrings": ["title", "key"]
+        },
+        "series_common": {
+            "rw": "randread",
+            "mode": "bw-th-1MiB-32",
+            "tool": "rpma_fio_bench.sh",
+            "tool_mode": "apm",
+            "requirements": {
+                "direct_write_to_pmem": true
+            }
+        },
+        "series": [
+            {
+                "filetype": "malloc",
+                "label": "DRAM"
+            },
+            {
+                "filetype": "pmem",
+                "label": "PMEM"
+            }
+        ]
+    }
+]
