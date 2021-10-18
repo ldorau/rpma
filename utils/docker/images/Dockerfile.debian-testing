@@ -49,6 +49,7 @@ ENV RPMA_DEPS "\
 	groff \
 	graphviz \
 	libibverbs-dev \
+	libpmem2-dev \
 	librdmacm-dev \
 	libunwind-dev \
 	pandoc"
