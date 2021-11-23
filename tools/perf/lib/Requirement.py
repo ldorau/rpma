@@ -212,7 +212,7 @@ class Requirement:
             # XXX check if the local copy of ddio.sh exists
             # XXX copy the ddio.sh script to the remote side
             # XXX configure the remote node using ddio.sh via RemoteCmd
-            raise NotImplementedError()
+            pass # raise NotImplementedError()
 
         @classmethod
         def is_met(cls, req, config):
