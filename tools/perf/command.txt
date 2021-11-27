@@ -1,0 +1,2 @@
+./report_bench.py run --config ./config.json --figure figures/read.json --result_dir ./report_dummy 
+

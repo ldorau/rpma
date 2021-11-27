@@ -1,0 +1,465 @@
+==================================================================
+
+IP		Adres MAC		Opis
+192.168.0.200	E4-5F-01-0F-42-3A	Raspberry Pi - Server DNS
+192.168.0.199	90-9A-77-28-7D-CF	Yamaha MusicCast
+192.168.0.198	74-38-B7-86-B9-54	Drukarka
+192.168.0.190	3E-84-6A-0F-55-12	Router-Extender
+
+192.168.0.201	18-F0-E4-F0-E7-75	Telefon Lukasza	
+192.168.0.202 	50-8F-4C-EC-88-48	Telefon Gosi
+192.168.0.203	28-C2-DD-6E-2F-3F	Laptop ASUS - domowy
+
+192.168.0.181	D8-47-32-01-4E-43	Router-Work-Bridge (Deweloperka Linux)
+192.168.0.182	E4-A7-A0-45-DC-D3	Laptop Intel Corpo
+192.168.0.183	00-24-D7-B7-34-14	Laptop DEVEL Lab
+192.168.0.184	D0-37-45-B5-AB-31	USB-WiFi-Linux
+
+==================================================================
+
+cześć Adam, mam jeszcze problem z wysyłaniem maili z tego samego minikomputerka co poprzednio (Debina Rasbian). Objaw jest taki, że maile nie dochodzą
+
+
+[ldorau@gklab-124-124 perf]$ cat ib_read_lat_21-11-24-220515-client.log
+numactl -N 0 ib_read_lat --iters 100 --size 256 			  -d mlx5_0 -R --perform_warm_up 192.168.1.100
+numactl -N 0 ib_read_lat --iters 100 --size 1024 			  -d mlx5_0 -R --perform_warm_up 192.168.1.100
+numactl -N 0 ib_read_lat --iters 100 --size 4096 			  -d mlx5_0 -R --perform_warm_up 192.168.1.100
+numactl -N 0 ib_read_lat --iters 100 --size 8192 			  -d mlx5_0 -R --perform_warm_up 192.168.1.100
+numactl -N 0 ib_read_lat --iters 100 --size 16384 			  -d mlx5_0 -R --perform_warm_up 192.168.1.100
+numactl -N 0 ib_read_lat --iters 100 --size 32768 			  -d mlx5_0 -R --perform_warm_up 192.168.1.100
+numactl -N 0 ib_read_lat --iters 100 --size 65536 			  -d mlx5_0 -R --perform_warm_up 192.168.1.100
+numactl -N 0 ib_read_lat --iters 100 --size 131072 			  -d mlx5_0 -R --perform_warm_up 192.168.1.100
+numactl -N 0 ib_read_lat --iters 100 --size 262144 			  -d mlx5_0 -R --perform_warm_up 192.168.1.100
+
+numactl -N 0 ib_read_lat --iters 27678723 --size 256 --qp 1 --tx-depth=1 -d mlx5_0 -R --perform_warm_up 192.168.1.100
+
+
+
+export CMAKE_PREFIX_PATH=
+export CPATH=
+export LIBRARY_PATH=
+export LD_LIBRARY_PATH=
+
+export CMAKE_PREFIX_PATH="/home/ldorau/work/rdma-core/build"
+export CPATH="/home/ldorau/work/rdma-core/build/include"
+export LIBRARY_PATH="/home/ldorau/work/rdma-core/build/lib"
+export LD_LIBRARY_PATH="/home/ldorau/work/rdma-core/build/lib"
+
+./report_figures.py --bench report_python/bench.json # _REP_1
+./report_create.py --bench report_python/bench.json --report report_python/report.json # _REP_2
+
+### report_dummy ###
+./report_bench.py run --config ./config.json --figure figures/read.json --result_dir ./report_dummy --dummy_results && ./report_figures.py --bench report_dummy/bench.json && ./report_create.py --bench report_dummy/bench.json
+
+rm ./pep8-tools_perf-status ; make cstyle-tools_perf # _PYLINT
+
+### report_test ###
+./report_bench.py run --config ./config.json --figure ./figures/read.json --result_dir ./report_test && ./report_bench.py continue --bench ./report_test/bench.json # _RUN
+
+
+export RPMA_SOFT_ROCE_IP=$(cd /home/ldorau/work/rpma/build && make config_softroce | grep -e '- network interface' | cut -d: -f3 | cut -c2-)
+
+/*
+target_compile_definitions(${TARGET}
+       PUBLIC TEST_MOCK_MAIN
+       PRIVATE TEST_MOCK_ALLOC
+       PRIVATE SRCVERSION="0.0")
+
+*/
+
+conn->channel->fd = 15 - completion channel = 15
+conn->evch->fd    = 16 - NEW event channel (rdma_migrate_id)
+
+ (struct rdma_cm_id *) 0x7fffe8001540
+
+conn->id OK
+conn->cq OK
+conn->id->qp == {0}
+      qp->context->ops.post_send
+
+
+sudo bash -c "echo "wlp9s0u1" > /sys/module/rdma_rxe/parameters/add"
+sudo bash -c "echo "rxe0" > /sys/module/rdma_rxe/parameters/remove"
+
+#
+# sudo docker network create -d macvlan --subnet=192.168.0.0/24 --gateway=192.168.0.1 -o parent=wlp9s0u1 docker_macvlan
+#
+docker run --privileged=true --name=$containerName -i $TTY \
+        --net=docker_macvlan --name macv1 --ip=192.168.0.99 \
+        $DNS_SETTING \
+
+
+[ldorau@gklab-124-124 ~]$ ll -d /usr/lib/librdmacm.so* /usr/lib/libibverbs.so*
+lrwxrwxrwx 1 root root     15 01-13 12:00 /usr/lib/libibverbs.so -> libibverbs.so.1
+lrwxrwxrwx 1 root root     22 01-13 12:00 /usr/lib/libibverbs.so.1 -> libibverbs.so.1.9.30.0
+-rwxr-xr-x 1 root root 974600 01-13 12:00 /usr/lib/libibverbs.so.1.9.30.0
+lrwxrwxrwx 1 root root     14 01-13 12:00 /usr/lib/librdmacm.so -> librdmacm.so.1
+lrwxrwxrwx 1 root root     21 01-13 12:00 /usr/lib/librdmacm.so.1 -> librdmacm.so.1.2.30.0
+-rwxr-xr-x 1 root root 597336 01-13 12:00 /usr/lib/librdmacm.so.1.2.30.0
+[ldorau@gklab-124-124 ~]$ file /usr/lib/librdmacm.so.1.2.30.0
+/usr/lib/librdmacm.so.1.2.30.0: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, BuildID[sha1]=ad628ad70fdf3fdfc34575027045c653f4dd0f93, with debug_info, not stripped
+[ldorau@gklab-124-124 ~]$ file /usr/lib/libibverbs.so.1.9.30.0
+/usr/lib/libibverbs.so.1.9.30.0: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, BuildID[sha1]=a90e0a53613ce547f671fdd85393fc178a6c6d87, with debug_info, not stripped
+
+[ldorau@gklab-124-124 ~]$ ll -d /usr/lib/librdmacm.so* /usr/lib/libibverbs.so*
+lrwxrwxrwx 1 root root     15 01-13 12:00 /usr/lib/libibverbs.so -> libibverbs.so.1
+lrwxrwxrwx 1 root root     32 01-13 20:38 /usr/lib/libibverbs.so.1 -> /usr/lib/libibverbs.so.1.11.33.0
+-rwxr-xr-x 1 root root 752656 01-13 16:25 /usr/lib/libibverbs.so.1.11.33.0
+lrwxrwxrwx 1 root root     14 01-13 12:00 /usr/lib/librdmacm.so -> librdmacm.so.1
+lrwxrwxrwx 1 root root     30 01-13 20:38 /usr/lib/librdmacm.so.1 -> /usr/lib/librdmacm.so.1.3.33.0
+-rwxr-xr-x 1 root root 320232 01-13 16:24 /usr/lib/librdmacm.so.1.3.33.0
+[ldorau@gklab-124-124 ~]$ file /usr/lib/librdmacm.so.1.3.33.0
+/usr/lib/librdmacm.so.1.3.33.0: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, BuildID[sha1]=d9ab65b4b58117c9451c5eaecbf6cd1e2b76bec5, with debug_info, not stripped
+[ldorau@gklab-124-124 ~]$ file /usr/lib/libibverbs.so.1.11.33.0
+/usr/lib/libibverbs.so.1.11.33.0: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, BuildID[sha1]=b4b030e2c7a83bfb775d19c09db0d07f90d8431f, with debug_info, not stripped
+
+
+
+[  105.501263] BUG: kernel NULL pointer dereference, address: 0000000000000270
+[  105.501268] #PF: supervisor read access in kernel mode
+[  105.501269] #PF: error_code(0x0000) - not-present page
+[  105.501271] PGD 0 P4D 0 
+[  105.501275] Oops: 0000 [#1] PREEMPT SMP PTI
+[  105.501278] CPU: 10 PID: 5908 Comm: client Tainted: G         C OE     5.10.6-arch1-1 #1
+[  105.501279] Hardware name: System manufacturer System Product Name/RAMPAGE IV EXTREME, BIOS 4701 11/18/2013
+[  105.501289] RIP: 0010:ib_umem_get+0x22a/0x3b0 [ib_uverbs]
+[  105.501291] Code: 00 02 00 00 49 0f 46 f6 e8 53 04 70 c0 89 c2 85 c0 78 7e 4c 63 d8 4c 89 d8 4d 29 de 48 c1 e0 0c 44 89 f1 48 01 c3 49 8b 04 24 <48> 8b 80 70 02 00 00 48 85 c0 0f 85 59 ff ff ff 41 b9 00 00 01 00
+[  105.501293] RSP: 0018:ffffaa6b40e07a80 EFLAGS: 00010206
+[  105.501295] RAX: 0000000000000000 RBX: 0000557978015000 RCX: 0000000000000000
+[  105.501297] RDX: 0000000000000001 RSI: ffff94625b6d1000 RDI: 0000000000000246
+[  105.501298] RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000001
+[  105.501299] R10: ffffec6906450940 R11: 0000000000000001 R12: ffff946240dca000
+[  105.501301] R13: ffff94624a7b3580 R14: 0000000000000000 R15: ffff94625b6d1000
+[  105.501303] FS:  00007f05f7496b80(0000) GS:ffff94656fc80000(0000) knlGS:0000000000000000
+[  105.501304] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  105.501306] CR2: 0000000000000270 CR3: 000000011b6f6004 CR4: 00000000000606e0
+[  105.501307] Call Trace:
+[  105.501316]  rxe_mem_init_user+0x65/0x260 [rdma_rxe]
+[  105.501322]  rxe_reg_user_mr+0x8e/0x150 [rdma_rxe]
+[  105.501327]  ib_uverbs_reg_mr+0x175/0x2b0 [ib_uverbs]
+[  105.501334]  ib_uverbs_handler_UVERBS_METHOD_INVOKE_WRITE+0xd5/0x140 [ib_uverbs]
+[  105.501339]  ? __check_object_size+0x46/0x150
+[  105.501343]  ib_uverbs_cmd_verbs+0xabd/0xc40 [ib_uverbs]
+[  105.501347]  ? misc_open+0x126/0x150
+[  105.501353]  ? ib_uverbs_handler_UVERBS_METHOD_QUERY_CONTEXT+0xe0/0xe0 [ib_uverbs]
+[  105.501355]  ? chrdev_open+0xca/0x240
+[  105.501364]  ib_uverbs_ioctl+0xbe/0x130 [ib_uverbs]
+[  105.501367]  __x64_sys_ioctl+0x83/0xb0
+[  105.501371]  do_syscall_64+0x33/0x40
+[  105.501373]  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+./csv_compare.py --output_layout bw --arg_axis threads --output_title "bw(th) (DRAM & PMEM, iodepth=4)" --output_file bw-th-DRAM-PMEM-iodepth4.png ./rpma_fio_write_bw-th-20-12-16-054531-th-1-16.csv ./rpma_fio_write_bw-th-20-12-16-060841-th-1-16.csv 
+
+
+/usr/bin/ld: warning: libfmt.so.7, needed by /usr/lib/ceph/libceph-common.so.2, not found (try using -rpath or -rpath-link)
+/usr/bin/ld: /usr/lib/ceph/libceph-common.so.2: undefined reference to `fmt::v7::detail::vformat[abi:cxx11](fmt::v7::basic_string_view<char>, fmt::v7::format_args)'
+collect2: error: ld returned 1 exit status
+make: *** [Makefile:544: fio] Error 1
+
+
+
+grep
+clang
+arch-update pandoc nodejs
+arch-update bzip2 man-pages asciidoctor
+
+$ grp downgraded "arch-update-20-11-16-07:32:00-4318.log" 
+12:[2020-11-16T07:32:25+0100] [ALPM] downgraded llvm-libs (11.0.0-1 -> 10.0.1-3)
+
+####################################################################################
+
+$ grp downgraded "arch-update-20-11-16-07:32:00-4318.log" 
+ 5:[2020-11-16T07:32:25+0100] [ALPM] downgraded bzip2 (1.0.8-4 -> 1.0.8-3)
+12:[2020-11-16T07:32:25+0100] [ALPM] downgraded llvm-libs (11.0.0-1 -> 10.0.1-3)
+16:[2020-11-16T07:32:26+0100] [ALPM] downgraded pandoc (2.11.0.2-2 -> 2.11.0.2-1)
+17:[2020-11-16T07:32:26+0100] [ALPM] downgraded nodejs (15.2.0-1 -> 15.1.0-1)
+18:[2020-11-16T07:32:26+0100] [ALPM] downgraded man-pages (5.09-2 -> 5.09-1)
+25:[2020-11-16T07:32:26+0100] [ALPM] downgraded grep (3.6-1 -> 3.5-1)
+28:[2020-11-16T07:32:27+0100] [ALPM] downgraded clang (11.0.0-1 -> 10.0.1-1)
+29:[2020-11-16T07:32:27+0100] [ALPM] downgraded asciidoctor (2.0.12-1 -> 2.0.11-1)
+
+###############################################################################
+$ mytools/bin/arch-revert ./arch-update-20-11-12-08\:48\:55-12201.log 
+###############################################################################
+
+$ mytools/bin/arch-revert ./arch-update-20-11-12-08\:48\:55-12201.log 2>&1 | grep -e downgrad
+warning: downgrading package pandoc (2.11.0.2-2 => 2.11.0.2-1)
+warning: downgrading package nodejs (15.2.0-1 => 15.1.0-1)
+warning: downgrading package man-pages (5.09-2 => 5.09-1)
+warning: downgrading package haskell-texmath (0.12.0.3-27 => 0.12.0.3-26)
+warning: downgrading package haskell-hxt (9.3.1.18-165 => 9.3.1.18-164)
+warning: downgrading package haskell-http-client-tls (0.3.5.3-323 => 0.3.5.3-322)
+warning: downgrading package haskell-network-uri (2.6.3.0-184 => 2.6.3.0-183)
+warning: downgrading package haskell-connection (0.3.1-63 => 0.3.1-62)
+warning: downgrading package haskell-x509-system (1.6.6-156 => 1.6.6-155)
+warning: downgrading package haskell-tls (1.5.4-43 => 1.5.4-42)
+warning: downgrading package haskell-x509-validation (1.6.11-88 => 1.6.11-87)
+warning: downgrading package haskell-x509-store (1.6.7-88 => 1.6.7-87)
+warning: downgrading package haskell-cryptonite (0.27-29 => 0.27-27)
+warning: downgrading package grep (3.6-1 => 3.5-1)
+warning: downgrading package clang (11.0.0-1 => 10.0.1-1)
+warning: downgrading package llvm-libs (11.0.0-1 => 10.0.1-3)
+warning: downgrading package bzip2 (1.0.8-4 => 1.0.8-3)
+warning: downgrading package asciidoctor (2.0.12-1 => 2.0.11-1)
+
+####################################################################################
+
+for f in $(ls -1 ./Dockerfile.* | xargs); do grep -q -e pandoc $f || vim $f; done
+
+warning: linux: ignoring package upgrade (5.6.13.arch1-1 => 5.9.1.arch1-1)
+warning: linux-headers: ignoring package upgrade (5.6.13.arch1-1 => 5.9.1.arch1-1)
+warning: mesa: ignoring package upgrade (20.0.7-3 => 20.2.1-1)
+warning: virtualbox-host-modules-arch: ignoring package upgrade (6.1.8-1 => 6.1.16-1)
+
+RPMA: mkdir -p $(pwd); cd $(pwd); rm -rf ~/work/rpma/build/* ~/work/rpma/build/.* ; cmake .. -DBUILD_DOC=OFF -DCMAKE_BUILD_TYPE=Debug -DDEVELOPER_MODE=ON -DCHECK_CSTYLE=ON -DCMAKE_INSTALL_PREFIX=/tmp && make -j12 && ctest --output-on-failure && make config_softroce && make test_softroce
+
+janekmi	git@github.com:janekmi/fio.git 
+
+TOKEN: 16855ba6a6f4c2fbfe3b51dd42808fb3e1f48326
+
+cgdb -x ./rdma.gdb --args fio --debug=all ./examples/rdmaio-server.fio 
+cgdb -x ./rdma.gdb --args fio --debug=all ./examples/rdmaio-client.fio 
+
+cgdb -x ../cgdb.cmd --args ./fio --debug=all ./examples/librpma_gpspm-server.fio 
+
+
+---------------------------------------------------------------------
+SERVER:
+---------------------------------------------------------------------
+___setup
+___init
+	___setup_listen
+		get_next_channel_event
+			rdma_get_cm_event -> WAITING FOR CONNECTION
+		___setup_qp
+		___setup_control_msg_buffers
+		ibv_post_recv
+		td_set_runstate(): runstate SETTING_UP -> RUNNING
+___post_init
+___open_file
+	___accept
+		rdma_accept
+		get_next_channel_event
+			rdma_get_cm_event
+		rdma_poll_wait /* wait for request IBV_WC_RECV */
+___prep
+	prep: io_u 0x55555602c000: ret=0
+	queue: io_u 0x55555602c000: off=0x0,len=0x400,ddir=0,file=receiver.0.0
+___queue
+___commit
+	fio_rdmaio_recv
+		/* re-post the rq_wr */
+		ibv_post_recv
+		rdma_poll_wait(td, IBV_WC_RECV);
+
+
+---------------------------------------------------------------------
+CLIENT:
+---------------------------------------------------------------------
+___setup
+___init
+	___setup_connect
+		get_next_channel_event
+		___setup_qp
+		___setup_control_msg_buffers
+		ibv_post_recv
+___post_init
+___open_file
+	___connect
+		rdma_connect
+		get_next_channel_event
+			rdma_get_cm_event -> WAITING FOR CONNECTION
+		rdma_poll_wait /* wait for remote MR info from server side IBV_WC_RECV */
+		-> fio: Received rkey 502c addr 55555601f400 len 1024 from peer
+___prep
+	prep: io_u 0x55555602c000: ret=0
+	queue: io_u 0x55555602c000: off=0x0,len=0x400,ddir=1,file=192.168.0.107
+___queue
+	td->io_u_queued++;
+        if (td->io_u_queued >= td->o.iodepth_batch)
+		td_io_commit(td);
+___commit
+	fio_rdmaio_send
+		ibv_post_send
+
+
+
+
+---------------------------------------------------------------------
+
+
+master
+cp src/librpma.map /tmp/
+git fetch upstream gh-pages
+git checkout -b gh-pages upstream/gh-pages
+if [ $? -ne 0 ]; then
+	git checkout gh-pages
+	git reset --hard upstream/gh-pages
+fi
+
+for f in $(cat /tmp/librpma.map | grep -e 'rpma_' | cut -d'r' -f2- | cut -d';' -f1); do \
+	grep -q -e "r$f.3" ./_data/releases_linux.yml || echo "Missing in releases_linux.yml: r$f"; \
+	grep -q -e "r$f.3" ./_data/libs_map.yml || echo "Missing in libs_map.yml: r$f"; \
+done
+
+for f in $(cat ./_data/releases_linux.yml | grep -e 'rpma_' | cut -d'r' -f2- | cut -d'.' -f1); do \
+	grep -q -e "r$f" /tmp/librpma.map || echo "Not needed in _data/releases_linux.yml: r$f"; \
+done
+
+for f in $(cat ./_data/libs_map.yml | grep -v -e '- librpma:' | grep -e 'rpma_' | cut -d'r' -f2- | cut -d':' -f1); do \
+	grep -q -e "r$f" /tmp/librpma.map || echo "Not needed in _data/libs_map.yml: r$f"; \
+done
+
+master
+git-rm-branch gh-pages
+
+
+Test 1 - tak jak w PR - DZIAŁA
+https://github.com/ldorau/rpma/blob/test-1-PR/cmake/functions.cmake#L205
+https://github.com/ldorau/rpma/actions/runs/259259273
+
+Test 2 - zmieniony - NIE DZIAŁA na CentOS-7:
+https://github.com/ldorau/rpma/blob/test-2-changed/cmake/functions.cmake#L205
+https://github.com/ldorau/rpma/actions/runs/259260475
+żeby naprawić example 05 trzeba bedzie naprawić
+
+
+
+-- Stderr:
+[  ERROR   ] --- 
+
+             "foo_bar.c:  199: foo_bar(): *WARNING*: Message" != 
+             "foo_bar.c:  199: foo_bar(): "
+"[time error] foo_bar.c:  199: foo_bar(): *WARNING*: Message"
+"[time error] foo_bar.c:  199: foo_bar(): *WARNING*: Message"
+
+/home/ldorau/work/rpma/tests/unit/common/mocks-stdio.c:68: error: Check of parameter fprintf_output, function __wrap_fprintf failed
+/home/ldorau/work/rpma/tests/unit/log_default/function.c:254: note: Expected parameter declared here
+[   LINE   ] --- /home/ldorau/work/rpma/tests/unit/common/mocks-stdio.c:68: error: Failure!
+[  PASSED  ] 10 test(s).
+[  FAILED  ] tests: 1 test(s), listed below:
+[  FAILED  ] function__stderr_path_snprintf_error
+
+ 1 FAILED TEST(S)
+
+CMake Error at /home/ldorau/work/rpma/tests/cmake/helpers.cmake:187 (message):
+   /home/ldorau/work/rpma/build/tests/unit/log_default/log_default-function  failed: 1
+Call Stack (most recent call first):
+  /home/ldorau/work/rpma/tests/cmake/helpers.cmake:240 (execute_common)
+  /home/ldorau/work/rpma/tests/cmake/run_default.cmake:10 (execute)
+
+
+############################################################
+
+NO:   make cstyle && make -j12 && ( clear && PMEM2_LOG_LEVEL=100 ./pmem2_badblock_mocks.static-debug ) || ( clear && make ) # NO
+GDB:  make cstyle && make -j12 && ( clear && PMEM2_LOG_LEVEL=100 gdb --command=~/work/gdb.cmd --args ./pmem2_badblock_mocks.static-debug ) || ( clear && make ) # GGDB
+CGDB: make cstyle && make -j12 && ( clear && PMEM2_LOG_LEVEL=100 cgdb --command=~/work/cgdb.cmd --args ./pmem2_badblock_mocks.static-debug ) || ( clear && make ) # CGDB
+
+###############################################################################
+
+May 14 07:06:08 devel kernel: fb0: switching to nouveaufb from EFI VGA
+May 14 07:06:08 devel kernel: nouveau 0000:01:00.0: NVIDIA GT218 (0a8280b1)
+May 14 07:06:08 devel kernel: nouveau 0000:01:00.0: bios: version 70.18.70.00.06
+May 14 07:06:08 devel kernel: nouveau 0000:01:00.0: fb: 1024 MiB DDR3
+May 14 07:06:09 devel /usr/lib/gdm-x-session[859]: (==) Matched nouveau as autoconfigured driver 0
+May 14 07:06:09 devel /usr/lib/gdm-x-session[859]: (II) LoadModule: "nouveau"
+May 14 07:06:09 devel /usr/lib/gdm-x-session[859]: (II) Loading /usr/lib/xorg/modules/drivers/nouveau_drv.so
+May 14 07:06:09 devel /usr/lib/gdm-x-session[859]: (II) Module nouveau: vendor="X.Org Foundation"
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: DRM: VRAM: 1024 MiB
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: DRM: GART: 1048576 MiB
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: DRM: TMDS table version 2.0
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: DRM: DCB version 4.0
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: DRM: DCB outp 00: 01000302 00020030
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: DRM: DCB outp 01: 02000300 00000000
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: DRM: DCB outp 02: 02011362 00020010
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: DRM: DCB outp 03: 01022310 00000000
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: DRM: DCB conn 00: 00001030
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: DRM: DCB conn 01: 00002161
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: DRM: DCB conn 02: 00000200
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: DRM: MM: using COPY for buffer copies
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: DRM: allocated 1920x1200 fb: 0x70000, bo 00000000f2fc9611
+May 14 07:06:09 devel kernel: fbcon: nouveaudrmfb (fb0) is primary device
+May 14 07:06:09 devel kernel: nouveau 0000:01:00.0: fb0: nouveaudrmfb frame buffer device
+May 14 07:06:09 devel kernel: [drm] Initialized nouveau 1.3.1 20120801 for 0000:01:00.0 on minor 0
+May 14 07:06:12 devel kernel: nouveau 0000:01:00.0: DRM: core notifier timeout
+May 14 07:06:14 devel kernel: nouveau 0000:01:00.0: DRM: base-0: timeout
+
+5.6.8-arch1-1
+
+https://gitlab.freedesktop.org/xorg/driver/xf86-video-nouveau/issues/467
+https://bugs.archlinux.org/task/63035
+
+OK:
+
+May 14 07:06:48 devel kernel: fb0: switching to nouveaufb from EFI VGA
+May 14 07:06:48 devel kernel: nouveau 0000:01:00.0: NVIDIA GT218 (0a8280b1)
+May 14 07:06:48 devel kernel: nouveau 0000:01:00.0: bios: version 70.18.70.00.06
+May 14 07:06:48 devel kernel: nouveau 0000:01:00.0: fb: 1024 MiB DDR3
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: DRM: VRAM: 1024 MiB
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: DRM: GART: 1048576 MiB
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: DRM: TMDS table version 2.0
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: DRM: DCB version 4.0
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: DRM: DCB outp 00: 01000302 00020030
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: DRM: DCB outp 01: 02000300 00000000
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: DRM: DCB outp 02: 02011362 00020010
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: DRM: DCB outp 03: 01022310 00000000
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: DRM: DCB conn 00: 00001030
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: DRM: DCB conn 01: 00002161
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: DRM: DCB conn 02: 00000200
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: DRM: MM: using COPY for buffer copies
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: DRM: allocated 1920x1200 fb: 0x70000, bo 00000000723f3980
+May 14 07:06:49 devel kernel: fbcon: nouveaudrmfb (fb0) is primary device
+May 14 07:06:49 devel kernel: nouveau 0000:01:00.0: fb0: nouveaudrmfb frame buffer device
+May 14 07:06:49 devel kernel: [drm] Initialized nouveau 1.3.1 20120801 for 0000:01:00.0 on minor 0
+May 14 07:06:49 devel /usr/lib/gdm-x-session[752]: (==) Matched nouveau as autoconfigured driver 0
+May 14 07:06:49 devel /usr/lib/gdm-x-session[752]: (II) LoadModule: "nouveau"
+May 14 07:06:49 devel /usr/lib/gdm-x-session[752]: (II) Loading /usr/lib/xorg/modules/drivers/nouveau_drv.so
+May 14 07:06:49 devel /usr/lib/gdm-x-session[752]: (II) Module nouveau: vendor="X.Org Foundation"
+May 14 07:06:49 devel /usr/lib/gdm-x-session[752]: (II) [drm] nouveau interface version: 1.3.1
+May 14 07:06:49 devel /usr/lib/gdm-x-session[752]: (II) NOUVEAU(0): [DRI2]   DRI driver: nouveau
+May 14 07:06:49 devel /usr/lib/gdm-x-session[752]: (II) NOUVEAU(0): [DRI2]   VDPAU driver: nouveau
+May 14 07:06:49 devel /usr/lib/gdm-x-session[752]: (II) AIGLX: Loaded and initialized nouveau
+May 14 07:09:19 devel /usr/lib/gdm-x-session[1325]: (==) Matched nouveau as autoconfigured driver 0
+May 14 07:09:19 devel /usr/lib/gdm-x-session[1325]: (II) LoadModule: "nouveau"
+May 14 07:09:19 devel /usr/lib/gdm-x-session[1325]: (II) Loading /usr/lib/xorg/modules/drivers/nouveau_drv.so
+May 14 07:09:19 devel /usr/lib/gdm-x-session[1325]: (II) Module nouveau: vendor="X.Org Foundation"
+May 14 07:09:19 devel /usr/lib/gdm-x-session[1325]: (II) [drm] nouveau interface version: 1.3.1
+May 14 07:09:19 devel /usr/lib/gdm-x-session[1325]: (II) NOUVEAU(0): [DRI2]   DRI driver: nouveau
+May 14 07:09:19 devel /usr/lib/gdm-x-session[1325]: (II) NOUVEAU(0): [DRI2]   VDPAU driver: nouveau
+May 14 07:09:19 devel /usr/lib/gdm-x-session[1325]: (II) AIGLX: Loaded and initialized nouveau
+May 14 07:15:17 devel kernel: Modules linked in: 8192eu(OE) cfg80211 fuse xt_conntrack xt_MASQUERADE nf_conntrack_netlink nfnetlink xfrm_user xfrm_algo xt_addrtype iptable_filter iptable_nat nf_nat nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 libcrc32c br_netfilter bridge stp llc overlay hid_logitech_hidpp intel_rapl_msr intel_rapl_common x86_pkg_temp_thermal intel_powerclamp coretemp kvm_intel joydev mousedev input_leds hid_logitech_dj kvm irqbypass snd_hda_codec_realtek eeepc_wmi iTCO_wdt nouveau snd_hda_codec_generic asus_wmi crct10dif_pclmul hid_generic iTCO_vendor_support crc32_pclmul snd_hda_codec_hdmi ledtrig_audio battery wmi_bmof dm_mod ghash_clmulni_intel sparse_keymap btusb aesni_intel snd_hda_intel btrtl mxm_wmi snd_intel_dspcfg usbhid crypto_simd i2c_algo_bit cryptd snd_hda_codec ttm glue_helper btbcm intel_cstate btintel intel_uncore bluetooth intel_rapl_perf hid pcspkr i2c_i801 e1000e snd_hda_core lpc_ich drm_kms_helper snd_hwdep snd_pcm cec snd_timer mei_me rc_core snd ecdh_generic mei
+
+###############################################################################
+
+SSE2 64 256 1024
+AVX  64 256 1024
+AVX512F 
+
+########################################################################################
+
+sudo insmod /lib/modules/5.5.8-arch1-1-bb/extra/test/nfit_test.ko.xz || for m in $(cat ~/modules); do sudo insmod /lib/modules/5.5.8-arch1-1-bb/extra/$m.ko.xz && echo "INSERTED: $m" && break || echo "FAILED: $m" ; done
+
+for l in $(cat ~/config-reqs | xargs); do grep -e "$l" ~/config || echo "NO: $l"; done
+
+rpma TESTS: $ mkdir -p `pwd` ; cd `pwd` ; rm -rf ./* && cmake .. -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DBUILD_DOC=OFF -DCMAKE_BUILD_TYPE=Debug -DDEVELOPER_MODE=ON -DCHECK_CSTYLE=OFF -DCMAKE_INSTALL_PREFIX=/tmp -DTESTS_LONG=ON -DTESTS_USE_FORCED_PMEM=ON -DTESTS_USE_FAULT_INJECTION=OFF && make install 2>&1 && ctest -V # TESTS
+
+rpma DOCS: $ mkdir -p `pwd` ; cd `pwd` ; rm -rf ./* && cmake .. -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON -DBUILD_DOC=ON -DCMAKE_BUILD_TYPE=Debug -DDEVELOPER_MODE=ON -DCHECK_CSTYLE=ON -DCMAKE_INSTALL_PREFIX=/tmp -DTESTS_LONG=ON -DTESTS_USE_FORCED_PMEM=ON -DTESTS_USE_FAULT_INJECTION=OFF && make -j12 install 2>&1 && ctest || make VERBOSE=1 # DOCS
+
+cmake: double-conversion libmagick6 libotf m17n-db m17n-lib tslib emacs qt5-base
+
+gcc: libutf8proc-2.4.0-1  serf-1.3.9-3  gcc-ada-9.2.0-3  lib32-gcc-libs-9.2.0-3  lib32-glibc-2.30-2  subversion-1.12.2-1
+
+cat ./log-0.txt | grep -e Passed | grep -e Test | awk '{print $7 " " $4}' | sort -n
+
+exec git commit -a --amend --reset-author --no-edit
+exec sleep 1
+
+appveyor warnings:
+for w in $(cat ./log.txt | grep ": warning" | cut -d':' -f5 | sort | uniq | cut -d' ' -f3); do export N=$(cat ./log.txt | grep -e "$w" | wc -l); echo "$N warnings #$w"; done | sort -nr
+
+
+$ sudo -E apt-get update && sudo -E apt-get install vim less mc
+
+######
+for l in 0 1 2 3; do sudo journalctl -b -p $l | grep -v -e "Logs begin at" -e "No entries" -e "EDAC sbridge"; done
+
