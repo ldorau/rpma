@@ -6,6 +6,9 @@
 
 """ib_read.py -- the ib_read_{lat,bw} tools runner (EXPERIMENTAL)"""
 
+import sys
+import re
+import subprocess as sub
 from datetime import datetime
 from os.path import join
 from shutil import which
@@ -105,10 +108,53 @@ class IbReadRunner:
         with open(settings['logfile_server'], 'w', encoding='utf-8') as log:
             log.write('\nstdout:\n{}\nstderr:\n{}\n'.format(stdout, stderr))
 
-    def __client_run(self, _settings):
-        # XXX run the client (locally) and wait till the end of execution
-        # XXX optionally measure the run time and assert exe_time >= 60s
+    @staticmethod
+    def grep_output(output, pattern):
+        """XXX grep_output"""
+        line = ''
+        for line in output.splitlines():
+            if re.search(pattern, line) and not re.search('[B]', line) and \
+               not re.search('RKey', line):
+                break
+        return line
+
+    @staticmethod
+    def line2csv(line):
+        """XXX line2csv"""
+        line = re.sub(r'^[ ]*', '', line)
+        line = re.sub(r'[ ]*$', '', line)
+        line = re.sub(r'\s+', ',', line)
+        return line
+
+    def __client_run(self, settings):
+        """run the client (locally) and wait till the end of execution"""
+        numa_n = str(self.__config['JOB_NUMA'])
+        ib_path = join(self.__config['IB_PATH'], settings['ib_tool'])
+        it_opt = ['--iters', str(settings['iterations'])]
+        aux_params = [*self.__config['AUX_PARAMS'], *settings['args']]
+        server_ip = self.__config['server_ip']
+        args = ['numactl', '-N', numa_n, ib_path, *aux_params,
+                *it_opt, server_ip]
+
+        # XXX add option to dump the command
+        try:
+            ret = sub.run(args, capture_output = True,
+                          text = True, check = True)
+        except sub.CalledProcessError as err:
+            print('\nstdout:\n{}\nstderr:\n{}\n'.format(err.stdout, err.stderr))
+            sys.exit(err.returncode)
+
+        # save stderr in the log file
+        with open(settings['logfile_client'], 'w', encoding='utf-8') as log:
+            log.write('\nstderr:\n{}\n'.format(ret.stderr))
+
+        line = self.grep_output(ret.stdout, str(settings['bs']))
+        csv = self.line2csv(line)
+        print('{}'.format(csv))
+
+        # to be continued :
         # XXX convert the ./csv2standardized.py script into a module?
+        # XXX optionally measure the run time and assert exe_time >= 60s
         # XXX return the measured value
         return 0
 
