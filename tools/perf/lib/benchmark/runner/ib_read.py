@@ -131,6 +131,7 @@ class IbReadRunner:
         numa_n = str(self.__config['JOB_NUMA'])
         ib_path = join(self.__config['IB_PATH'], settings['ib_tool'])
         it_opt = ['--iters', str(settings['iterations'])]
+        it_opt = ['--iters', '100'] # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         aux_params = [*self.__config['AUX_PARAMS'], *settings['args']]
         server_ip = self.__config['server_ip']
         args = ['numactl', '-N', numa_n, ib_path, *aux_params,
@@ -214,9 +215,6 @@ class IbReadRunner:
                 8192: 24475088,
                 16384: 23630690,
                 32768: 8299603,
-                65536: 5001135,
-                131072: 4800000,
-                262144: 2600000
             }
         },
         'bw-dp-exp': {
@@ -282,9 +280,6 @@ class IbReadRunner:
                 8192:   16778088,
                 16384:  11423082,
                 32768:  8138946,
-                65536:  6002473,
-                131072: 3600000,
-                262144: 2100000
             }
         }
     }

@@ -193,6 +193,16 @@ class FioRunner:
             'threads': 1,
             'bs': BS_VALUES,
             'iodepth': 1,
+            'sync': True},
+        'bw-bs': {
+            'threads': 1,
+            'bs': BS_VALUES,
+            'iodepth': 1,
+            'sync': True},
+        'bw-th': {
+            'threads': 1,
+            'bs': BS_VALUES,
+            'iodepth': 1,
             'sync': True}
     }
     # XXX TBD
