@@ -51,7 +51,14 @@ class IbReadRunner:
         self.__benchmark = benchmark
         self.__config = config
         self.__idfile = idfile
+
         self.__server = None
+        self.dump_cmds = False
+
+        # set dumping commands
+        if 'DUMP_CMDS' in self.__config and self.__config['DUMP_CMDS']:
+            self.dump_cmds = True
+
         # pick the settings predefined for the chosen mode
         self.__mode = self.__benchmark.oneseries['mode']
         self.__settings = self.SETTINGS_BY_MODE.get(self.__mode, None)
@@ -97,7 +104,11 @@ class IbReadRunner:
         r_aux_params = [*self.__config['REMOTE_AUX_PARAMS'], *settings['args']]
 
         args = ['numactl', '-N', r_numa_n, r_ib_path, *r_aux_params]
+
         # XXX add option to dump the command
+        if self.dump_cmds:
+            print("[server]$ {}".format(' '.join(args)))
+
         self.__server = RemoteCmd.run_async(self.__config, args, None)
 
     def __server_stop(self, settings):
@@ -138,6 +149,9 @@ class IbReadRunner:
                 *it_opt, server_ip]
 
         # XXX add option to dump the command
+        if self.dump_cmds:
+            print("[client]$ {}".format(' '.join(args)))
+
         try:
             ret = sub.run(args, capture_output = True,
                           text = True, check = True)
