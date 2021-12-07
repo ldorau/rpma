@@ -11,6 +11,8 @@
 
 set -e
 
+/bin/bash -i
+
 PREFIX=/usr
 CC=${CC:-gcc}
 CHECK_CSTYLE=${CHECK_CSTYLE:-ON}

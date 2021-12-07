@@ -14,9 +14,17 @@ FROM tgagor/centos:stream
 MAINTAINER tomasz.gromadzki@intel.com
 
 RUN dnf update -y
-RUN dnf install -y epel-release
 RUN dnf install -y 'dnf-command(config-manager)'
-RUN dnf config-manager --set-enabled powertools
+
+# install epel-release-latest-9 according to:
+# https://docs.fedoraproject.org/en-US/epel/#_quickstart
+RUN dnf config-manager --set-enabled crb
+RUN dnf install -y \
+    https://dl.fedoraproject.org/pub/epel/9/Everything/x86_64/Packages/e/epel-release-9-2.el9.noarch.rpm \
+    https://dl.fedoraproject.org/pub/epel/9/Everything/x86_64/Packages/e/epel-next-release-9-2.el9.noarch.rpm
+RUN dnf update -y
+
+# RUN dnf config-manager --set-enabled powertools
 
 # base deps
 ENV BASE_DEPS "\
@@ -34,7 +42,6 @@ ENV TOOLS_DEPS "\
 	python3-jinja2"
 
 ENV TESTS_DEPS "\
-	python3-pylint \
 	python3-pip \
 	python3-pytest"
 
@@ -54,8 +61,6 @@ ENV RPMA_DEPS "\
 	gawk \
 	groff \
 	graphviz \
-	libunwind-devel \
-	pandoc \
 	rdma-core-devel"
 
 # Install all required packages
