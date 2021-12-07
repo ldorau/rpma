@@ -86,6 +86,13 @@ class FioRunner:
             self.__settings['threads'] = config['CORES_PER_SOCKET']
 
     def __server_start(self, settings):
+        """ ENV="serverip=$SERVER_IP numjobs=${TH} iodepth=${DP} \
+            direct_write_to_pmem=${REMOTE_DIRECT_WRITE_TO_PMEM} \
+            busy_wait_polling=${BUSY_WAIT_POLLING} cpuload=${CPU} \
+            cores_per_socket=${CORES_PER_SOCKET}"
+            SERVER_COMMAND="$ENV $REMOTE_TRACER ${REMOTE_FIO_PATH}fio \
+            $REMOTE_JOB_PATH $FILE_NAME $FILTER >> $LOG_ERR 2>&1"
+        """
         # XXX to be removed when the implementation will be complete
         # pylint: disable=unused-variable
         args = []
