@@ -108,7 +108,8 @@ class IbReadRunner:
               .format(settings['bs'], settings['threads'],
                       settings['iodepth'], settings['iterations']))
         r_numa_n = str(self.__config['REMOTE_JOB_NUMA'])
-        r_aux_params = [*self.__config['REMOTE_AUX_PARAMS'], *settings['args']]
+        r_aux_params = [*self.__config['REMOTE_AUX_PARAMS'].split(' '),
+                        *settings['args']]
 
         args = ['numactl', '-N', r_numa_n, self.__r_ib_path, *r_aux_params]
         # XXX add option to dump the command (DUMP_CMDS)
@@ -127,7 +128,8 @@ class IbReadRunner:
         numa_n = str(self.__config['JOB_NUMA'])
         it_opt = '--iters=' + str(settings['iterations'])
         it_opt = '--iters=1000' # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-        aux_params = [*self.__config['AUX_PARAMS'], *settings['args']]
+        aux_params = [*self.__config['AUX_PARAMS'].split(' '),
+                      *settings['args']]
         server_ip = self.__config['server_ip']
         args = ['numactl', '-N', numa_n, self.__ib_path, *aux_params,
                 it_opt, server_ip]
