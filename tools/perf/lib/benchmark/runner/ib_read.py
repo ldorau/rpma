@@ -139,7 +139,6 @@ class IbReadRunner:
         """run the client (locally) and wait till the end of execution"""
         numa_n = str(self.__config['JOB_NUMA'])
         it_opt = '--iters=' + str(settings['iterations'])
-        it_opt = '--iters=1000' # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         aux_params = [*self.__config['AUX_PARAMS'].split(' '),
                       *settings['args']]
         server_ip = self.__config['server_ip']
