@@ -100,6 +100,20 @@ class IbReadRunner:
             args.append('--perform_warm_up')
         return args
 
+    def __wait_till_server_listens(self, server: RemoteCmd):
+        """Wait till server starts listening"""
+        print('__wait_till_server_listens...')
+        counter = 1
+        while True:
+            print('stdout({}) = {}'
+                  .format(counter, server.stdout.read().decode().strip()))
+            print('stderr({}) = {}'
+                  .format(counter, server.stderr.read().decode().strip()))
+            if counter == 10:
+                break
+            time.sleep(1.0)
+            counter = counter + 1
+
     def __server_start(self, settings):
         """Start the server on the remote side (using RemoteCmd)
            and keep an object allowing to control the server.
@@ -115,6 +129,7 @@ class IbReadRunner:
         args = ['numactl', '-N', r_numa_n, self.__r_ib_path, *r_aux_params]
         # XXX add option to dump the command (DUMP_CMDS)
         self.__server = RemoteCmd.run_async(self.__config, args)
+        self.__wait_till_server_listens(self.__server)
 
     def __server_stop(self, settings):
         """wait until server finishes"""
