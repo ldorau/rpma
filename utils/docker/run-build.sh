@@ -175,7 +175,8 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug \
 	-DUSE_UBSAN=${CI_SANITS}
 
 make -j$(nproc)
-ctest --output-on-failure
+ctest -I 44,45 --output-on-failure || ( echo "ctest -I 44,45 --output-on-failure" && /bin/bash -i )
+ctest --output-on-failure || ( echo "ctest --output-on-failure" && /bin/bash -i )
 run_pytest
 
 cd $WORKDIR
