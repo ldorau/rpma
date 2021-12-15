@@ -187,6 +187,9 @@ class FioRunner:
         if self.__dump_cmds:
             with open(settings['logfile_server'], 'a', encoding='utf-8') as log:
                 log.write("[server]$ {}".format(' '.join(args)))
+
+        print('[server]$ {}'.format(' '.join(args)))
+
         self.__server = RemoteCmd.run_async(self.__config, args)
         time.sleep(0.1) # wait 0.1 sec for server to start listening
 
@@ -230,6 +233,10 @@ class FioRunner:
         if self.__dump_cmds:
             with open(settings['logfile_client'], 'a', encoding='utf-8') as log:
                 log.write("[client]$ {}".format(' '.join(args)))
+
+        print('[client]$ env = {}'.format(env))
+        print('[client]$ {}'.format(' '.join(args)))
+
         try:
             ret = subprocess.run(args, check=True, env=env,
                                  stdout=subprocess.PIPE,

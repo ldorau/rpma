@@ -114,6 +114,8 @@ class IbReadRunner:
             with open(settings['logfile_server'], 'a', encoding='utf-8') as log:
                 log.write("[server]$ {}".format(' '.join(args)))
 
+        print('[server]$ {}'.format(' '.join(args)))
+
         self.__server = RemoteCmd.run_async(self.__config, args)
         time.sleep(0.1) # wait 0.1 sec for server to start listening
 
@@ -154,6 +156,8 @@ class IbReadRunner:
         if self.__dump_cmds:
             with open(settings['logfile_client'], 'a', encoding='utf-8') as log:
                 log.write("[client]$ {}".format(' '.join(args)))
+
+        print('[client]$ {}'.format(' '.join(args)))
 
         # XXX optionally measure the run time and assert exe_time >= 60s
 
