@@ -250,7 +250,12 @@ class FioRunner:
             run_post_command(self.__config, self.__benchmark.oneseries)
             raise # re-raise the current exception
 
+        print('\nstderr:\n{}\n'.format(ret.stderr))
+
         result = FioFormat.parse(ret.stdout)
+
+        print('result:\n{}\n'.format(result))
+        print('self.__result_keys: {}\n'.format(self.__result_keys))
 
         # append cpuload to the results
         if 'cpuload' in settings:
@@ -264,6 +269,7 @@ class FioRunner:
         else:
             ret_val = (result[self.__result_keys[0]],
                        result[self.__result_keys[1]])
+        print('ret_val:\n{}\n'.format(ret_val))
         return ret_val
 
     def __result_append(self, _, y_value: dict):
@@ -329,7 +335,7 @@ class FioRunner:
     __DURATION = {
         'short': {
             'ramp': 0,
-            'run': 10,
+            'run': 1,
         },
         'full': {
             'ramp': 15,
