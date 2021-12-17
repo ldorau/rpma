@@ -38,6 +38,7 @@ class Executor:
         if 'tool' not in benchmark.oneseries:
             raise ValueError('\'tool\' key is missing in the figure')
         tool = benchmark.oneseries['tool']
+        print(benchmark.oneseries)
         runner_cls = cls.__RUNNERS.get(tool, None)
         if runner_cls is None:
             raise NotImplementedError('\'{}\' runner is not implemented'

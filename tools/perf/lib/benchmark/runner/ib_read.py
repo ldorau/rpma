@@ -145,6 +145,7 @@ class IbReadRunner:
             it_opt = '--iters=10'
         else:
             it_opt = '--iters=' + str(settings['iterations'])
+            it_opt = '--iters=100' # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         aux_params = [*settings['args']]
         cfg_aux_params = self.__config['AUX_PARAMS'].split(' ')
         if cfg_aux_params != ['']:
@@ -267,9 +268,6 @@ class IbReadRunner:
                 8192: 24475088,
                 16384: 23630690,
                 32768: 8299603,
-                65536: 5001135,
-                131072: 4800000,
-                262144: 2600000
             }
         },
         'bw-dp-exp': {
@@ -310,7 +308,7 @@ class IbReadRunner:
         },
         'bw-th': {
             'ib_tool': 'ib_read_bw',
-            'threads': [1, 2, 4, 8, 12],
+            'threads': [1, 2, 4, 8],
             'bs': 4096,
             'iodepth': 2,
             # values measured empirically, so that duration was ~60s
@@ -335,9 +333,6 @@ class IbReadRunner:
                 8192:   16778088,
                 16384:  11423082,
                 32768:  8138946,
-                65536:  6002473,
-                131072: 3600000,
-                262144: 2100000
             }
         }
     }
