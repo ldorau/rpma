@@ -326,7 +326,7 @@ class FioRunner:
     __X_KEYS = ['threads', 'bs', 'iodepth', 'cpuload']
     __BW_DP_EXP_DEPTHS = [1, 2, 4, 8, 16, 32, 64, 128]
     __BW_DP_LIN_DEPTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    __THREADS_VALUES = [1, 2, 4, 8, 12, 16, 32, 64]
+    __THREADS_VALUES = [1, 2, 4, 8, 12, 16, 32]
 
     __SETTINGS_BY_MODE = {
         'bw-bs': {
