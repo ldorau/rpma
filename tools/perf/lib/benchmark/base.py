@@ -53,6 +53,7 @@ class Benchmark:
             self.__req = deepcopy(req)
         else:
             self.__req = oneseries.pop('requirements', {})
+        print('>>> Benchmark.__req = {}'.format(self.__req))
         self.__oneseries = oneseries
 
     @classmethod

@@ -44,6 +44,7 @@ class Requirement:
             self.__benchmarks = {}
         req['done'] = req.get('done', False)
         self.__req = req
+        print('>>> Requirement.__benchmarks = {}'.format(self.__benchmarks))
 
     @property
     def identifier(_):
