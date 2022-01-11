@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2020-2021, Intel Corporation
+# Copyright 2020-2022, Intel Corporation
 #
 
 #
@@ -17,7 +17,7 @@ if [ $? -ne 0 ]; then
 	set -e
 	openssl s_client -showcerts -servername git.cryptomilk.org -connect git.cryptomilk.org:443 </dev/null 2>/dev/null \
 		| sed -n -e '/BEGIN\ CERTIFICATE/,/END\ CERTIFICATE/ p'  > git-cryptomilk.org.pem
-	cat git-cryptomilk.org.pem | sudo tee -a /etc/ssl/certs/ca-certificates.crt
+	cat git-cryptomilk.org.pem | tee -a /etc/ssl/certs/ca-certificates.crt
 	rm git-cryptomilk.org.pem
 	git clone https://git.cryptomilk.org/projects/cmocka.git
 fi
@@ -31,6 +31,6 @@ git checkout $CMOCKA_VERSION
 
 cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=RelWithDebInfo
 make -j$(nproc)
-sudo make -j$(nproc) install
+make -j$(nproc) install
 cd ../..
-sudo rm -rf cmocka
+rm -rf cmocka
