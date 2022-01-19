@@ -266,9 +266,13 @@ rpma_cq_get_completion(struct rpma_cq *cq, struct rpma_completion *cmpl)
  * rpma_cq_get_wc -- receive one or more completions from the CQ
  */
 int
-rpma_cq_get_wc(struct rpma_cq *cq, int num_entries, struct ibv_wc *wc)
+rpma_cq_get_wc(struct rpma_cq *cq, int num_entries, struct ibv_wc *wc,
+		int *got_entries)
 {
 	if (cq == NULL || num_entries < 1 || wc == NULL)
+		return RPMA_E_INVAL;
+
+	if (num_entries > 1 && got_entries == NULL)
 		return RPMA_E_INVAL;
 
 	int result = ibv_poll_cq(cq->cq, num_entries, wc);
@@ -289,5 +293,8 @@ rpma_cq_get_wc(struct rpma_cq *cq, int num_entries, struct ibv_wc *wc)
 		return RPMA_E_UNKNOWN;
 	}
 
-	return result;
+	if (got_entries)
+		*got_entries = result;
+
+	return 0;
 }

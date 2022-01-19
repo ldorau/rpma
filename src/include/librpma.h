@@ -2951,10 +2951,14 @@ int rpma_cq_get_completion(struct rpma_cq *cq, struct rpma_completion *cmpl);
  *			struct ibv_wc *wc);
  *
  * DESCRIPTION
- * rpma_cq_get_wc() receives num_entries completions of already posted
- * operations from the specified CQ to the wc which is a pointer to an array
- * of ibv_wc structs. It receivces all completions if the number of entires
- * in the specified CQ is fewer than num_entries. All operations generate
+ * rpma_cq_get_wc() polls the cq CQ for work completions and returns the first
+ * num_entries (or all available completions if the CQ contains fewer than this
+ * number) in the wc array exactly like ibv_poll_cq(3) does. The argument wc is
+ * a pointer to an array of ibv_wc structs, as defined in <infiniband/verbs.h>.
+ * A number of got completions is returned in the got_entries argument,
+ * if it is not NULL. It can be NULL only if num_entries equals 1.
+ * 
+ * All operations generate ...
  * completions on error. The operations posted with the RPMA_F_COMPLETION_ALWAYS
  * flag also generate completions on success. Please see ibv_poll_cq(3)'s
  * manual for details about struct ibv_wc.
