@@ -8,6 +8,7 @@
  */
 
 #include <inttypes.h>
+#include <infiniband/verbs.h>
 #include <librpma.h>
 #include <stdlib.h>
 #include <stdio.h>
