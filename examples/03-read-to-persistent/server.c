@@ -39,9 +39,6 @@ main(int argc, char *argv[])
 	int ret;
 	char *addr = argv[1];
 	char *port = argv[2];
-	char *pmem_path = NULL;
-	if (argc >= 4)
-		pmem_path = argv[3];
 
 	/* resources - memory region */
 	void *mr_ptr = NULL;
@@ -49,10 +46,12 @@ main(int argc, char *argv[])
 	size_t dst_offset = 0;
 	struct rpma_mr_local *dst_mr = NULL;
 	struct rpma_mr_remote *src_mr = NULL;
-	int is_pmem = 0;
 
 #ifdef USE_LIBPMEM
-	if (pmem_path) {
+	char *pmem_path = NULL;
+	int is_pmem = 0;
+	if (argc >= 4) {
+		pmem_path = argv[3];
 		/* map the file */
 		mr_ptr = pmem_map_file(pmem_path, 0 /* len */, 0 /* flags */,
 				0 /* mode */, &mr_size, &is_pmem);
@@ -91,7 +90,7 @@ main(int argc, char *argv[])
 		 */
 		if (mr_size - dst_offset < KILOBYTE) {
 			fprintf(stderr, "%s too small (%zu < %zu)\n",
-					path, mr_size, KILOBYTE + dst_offset);
+				pmem_path, mr_size, KILOBYTE + dst_offset);
 			(void) pmem_unmap(mr_ptr, mr_size);
 			return -1;
 		}
@@ -145,6 +144,7 @@ main(int argc, char *argv[])
 	if (ret)
 		goto err_ep_shutdown;
 
+#ifdef USE_LIBPMEM
 	/* rpma_mr_advise() should be called only in case of FsDAX */
 	if (is_pmem && strstr(pmem_path, "/dev/dax") == NULL) {
 		ret = rpma_mr_advise(dst_mr, 0, mr_size,
@@ -153,6 +153,7 @@ main(int argc, char *argv[])
 		if (ret)
 			goto err_mr_dereg;
 	}
+#endif
 
 	/*
 	 * Wait for an incoming connection request, accept it and wait for its
