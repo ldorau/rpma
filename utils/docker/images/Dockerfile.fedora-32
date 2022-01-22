@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2016-2021, Intel Corporation
+# Copyright 2016-2022, Intel Corporation
 #
 
 #
@@ -43,7 +43,8 @@ ENV PYTHON_DEPS "\
 	markdown2 \
 	matplotlib \
 	paramiko \
-	scp"
+	scp \
+	coverage"
 
 # RPMA deps
 ENV RPMA_DEPS "\
