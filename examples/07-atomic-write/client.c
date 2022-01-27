@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2020-2021, Intel Corporation */
+/* Copyright 2020-2022, Intel Corporation */
 /* Copyright 2021-2022, Fujitsu */
 
 /*
@@ -19,6 +19,25 @@
 
 #define FLUSH_ID	(void *)0xF01D /* a random identifier */
 #define KILOBYTE	1024
+
+int
+verify_completion(struct ibv_wc *wc)
+{
+	if (wc->wr_id != (uintptr_t)FLUSH_ID) {
+		(void) fprintf(stderr, "unexpected wc.wr_id value (0x%"
+				PRIXPTR " != 0x%" PRIXPTR ")\n",
+				wc->wr_id, (uintptr_t)FLUSH_ID);
+		return -1;
+	}
+
+	if (wc->status != IBV_WC_SUCCESS) {
+		(void) fprintf(stderr, "rpma_flush() failed: %s\n",
+				ibv_wc_status_str(wc->status));
+		return -1;
+	}
+
+	return 0;
+}
 
 int
 main(int argc, char *argv[])
@@ -48,9 +67,9 @@ main(int argc, char *argv[])
 
 	/* resources - completions */
 	int num_wc_got = 0;
-	/* expected number of completions == number of words in command line */
-	int exp_num_wc = argc - 3;
-	struct ibv_wc wc[exp_num_wc];
+	/* maximum number of completions == number of words in command line */
+	int num_wc_all = argc - 3;
+	struct ibv_wc wc[num_wc_all];
 
 	/* prepare memory */
 	mr_ptr = malloc_aligned(KILOBYTE);
@@ -188,43 +207,25 @@ main(int argc, char *argv[])
 				sizeof(uint64_t), flush_type,
 				RPMA_F_COMPLETION_ALWAYS, FLUSH_ID)))
 			break;
-
-		/* wait for the completion to be ready */
-		if ((ret = rpma_cq_wait(cq)))
-			break;
 	}
 
 	/* one of above operations in the loop failed */
 	if (ret)
 		goto err_mr_remote_delete;
 
-	if ((ret = rpma_cq_get_wc(cq, exp_num_wc, wc, &num_wc_got)))
-		goto err_mr_remote_delete;
-
-	if (num_wc_got != exp_num_wc) {
-		ret = -1;
-		(void) fprintf(stderr,
-				"unexpected number of completions (%d != %d)\n",
-				num_wc_got, exp_num_wc);
-		goto err_mr_remote_delete;
-	}
-
-	for (int i = 0; i < exp_num_wc; ++i) {
-		if (wc[i].wr_id != (uintptr_t)FLUSH_ID) {
-			ret = -1;
-			(void) fprintf(stderr,
-					"unexpected wc.wr_id value "
-					"(0x%" PRIXPTR " != 0x%" PRIXPTR ")\n",
-					wc[i].wr_id, (uintptr_t)FLUSH_ID);
+	int wc_got_so_far = 0;
+	while (wc_got_so_far < num_wc_all) {
+		/* wait for the next completion to be ready */
+		if ((ret = rpma_cq_wait(cq)))
 			break;
-		}
 
-		if (wc[i].status != IBV_WC_SUCCESS) {
-			ret = -1;
-			(void) fprintf(stderr, "rpma_flush() failed: %s\n",
-					ibv_wc_status_str(wc[i].status));
+		if ((ret = rpma_cq_get_wc(cq, num_wc_all, wc, &num_wc_got)))
 			break;
-		}
+
+		for (int i = 0; i < num_wc_got; ++i)
+			if ((ret = verify_completion(&wc[i])))
+				break;
+		wc_got_so_far += num_wc_got;
 	}
 
 err_mr_remote_delete:
