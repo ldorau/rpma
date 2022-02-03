@@ -20,6 +20,41 @@
 #include "receive-completion-queue-common.h"
 
 int
+get_wc_and_validate(struct rpma_cq *cq, enum ibv_wc_opcode opcode,
+			char *func_name)
+{
+	struct ibv_wc wc;
+
+	/* prepare send completions, get one and validate it */
+	int ret = rpma_cq_get_wc(cq, 1, &wc, NULL);
+	if (ret && ret != RPMA_E_NO_COMPLETION)
+		return -1;
+
+	if (ret == RPMA_E_NO_COMPLETION) {
+		if ((ret = rpma_cq_wait(cq))) {
+			return -1;
+		} else if ((ret = rpma_cq_get_wc(cq, 1, &wc, NULL))) {
+			return -1;
+		}
+	}
+
+	if (wc.status != IBV_WC_SUCCESS) {
+		(void) fprintf(stderr, "%s failed: %s\n",
+			func_name, ibv_wc_status_str(wc.status));
+		return -1;
+	}
+
+	if (wc.opcode != opcode) {
+		(void) fprintf(stderr, "unexpected wc.opcode value "
+			"(0x%" PRIXPTR " != 0x%" PRIXPTR ")\n",
+			(uintptr_t)wc.opcode, (uintptr_t)opcode);
+		return -1;
+	}
+
+	return 0;
+}
+
+int
 main(int argc, char *argv[])
 {
 	/* validate parameters */
@@ -54,7 +89,6 @@ main(int argc, char *argv[])
 	struct rpma_conn_req *req = NULL;
 	enum rpma_conn_event conn_event = RPMA_CONN_UNDEFINED;
 	struct rpma_conn *conn = NULL;
-	struct ibv_wc wc;
 
 	/*
 	 * lookup an ibv_context via the address and create a new peer using it
@@ -121,89 +155,17 @@ main(int argc, char *argv[])
 	if ((ret = rpma_conn_get_rcq(conn, &rcq)))
 		goto err_conn_disconnect;
 
-	/* IBV_WC_SEND completion in the first round is not present */
-	int send_cmpl = 1;
-
 	while (1) {
-		/* prepare send completions, get one and validate it */
-		if (send_cmpl == 0) {
-			ret = rpma_cq_get_wc(cq, 1, &wc, NULL);
-			if (ret && ret != RPMA_E_NO_COMPLETION)
-				break;
-
-			if (ret == RPMA_E_NO_COMPLETION) {
-				if ((ret = rpma_cq_wait(cq))) {
-					break;
-				} else if ((ret = rpma_cq_get_wc(cq, 1,
-						&wc, NULL))) {
-					break;
-				}
-			}
-
-			if (wc.status != IBV_WC_SUCCESS) {
-				(void) fprintf(stderr,
-					"rpma_send() failed: %s\n",
-					ibv_wc_status_str(wc.status));
-				ret = -1;
-				break;
-			}
-
-			if (wc.opcode != IBV_WC_SEND) {
-				(void) fprintf(stderr,
-					"unexpected wc.opcode value "
-					"(0x%" PRIXPTR " != 0x%" PRIXPTR ")\n",
-					(uintptr_t)wc.opcode,
-					(uintptr_t)IBV_WC_SEND);
-				ret = -1;
-				break;
-			} else {
-				send_cmpl = 1;
-			}
-		}
-
-		/* prepare receive completions, get one and validate it */
-		ret = rpma_cq_get_wc(rcq, 1, &wc, NULL);
-		if (ret && ret != RPMA_E_NO_COMPLETION)
-			break;
-
-		if (ret == RPMA_E_NO_COMPLETION) {
-			if ((ret = rpma_cq_wait(rcq))) {
-				break;
-			} else if ((ret = rpma_cq_get_wc(rcq, 1,
-					&wc, NULL))) {
-				if (ret == RPMA_E_NO_COMPLETION)
-					continue;
-				break;
-			}
-		}
-
-		if (wc.status != IBV_WC_SUCCESS) {
-			(void) fprintf(stderr,
-				"rpma_recv() failed: %s\n",
-				ibv_wc_status_str(wc.status));
-			ret = -1;
-			break;
-		}
-
-		if (wc.opcode != IBV_WC_RECV) {
-			(void) fprintf(stderr,
-				"unexpected wc.opcode value "
-				"(0x%" PRIXPTR " != 0x%" PRIXPTR ")\n",
-				(uintptr_t)wc.opcode,
-				(uintptr_t)IBV_WC_RECV);
-			ret = -1;
-			break;
-		}
-		send_cmpl = 0;
-
+		/* get one receive completion and validate it */
+		ret = get_wc_and_validate(rcq, IBV_WC_RECV, "rpma_recv()");
 		if (ret)
-			break;
-
-		if (*recv == I_M_DONE)
 			break;
 
 		/* print the received old value of the client's counter */
 		(void) printf("SERVER: Value received: %" PRIu64 "\n", *recv);
+
+		if (*recv == I_M_DONE)
+			break;
 
 		/* calculate a new counter's value */
 		*send = *recv + 1;
@@ -220,6 +182,11 @@ main(int argc, char *argv[])
 				 * after few rounds rpma_send() returns ENOMEM.
 				 */
 				RPMA_F_COMPLETION_ALWAYS, NULL)))
+			break;
+
+		/* get one send completion and validate it */
+		ret = get_wc_and_validate(cq, IBV_WC_SEND, "rpma_send()");
+		if (ret)
 			break;
 	}
 

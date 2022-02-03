@@ -109,7 +109,7 @@ function run_example() {
 		;;
 	12-receive-completion-queue)
 		SEED=7
-		ROUNDS=3
+		ROUNDS=10
 		echo "Starting the client ..."
 		$VLD_CCMD $DIR/client $IP_ADDRESS $PORT $SEED $ROUNDS
 		RV=$?
