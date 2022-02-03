@@ -73,6 +73,7 @@ function run_example() {
 
 	echo "Starting the server ..."
 	$VLD_SCMD $DIR/server $IP_ADDRESS $PORT &
+	echo "$VLD_SCMD $DIR/server $IP_ADDRESS $PORT &"
 	sleep 1
 
 	RV=0
@@ -111,7 +112,9 @@ function run_example() {
 		SEED=7
 		ROUNDS=10
 		echo "Starting the client ..."
+		echo "$VLD_CCMD $DIR/client $IP_ADDRESS $PORT $SEED $ROUNDS"
 		$VLD_CCMD $DIR/client $IP_ADDRESS $PORT $SEED $ROUNDS
+		exit $?
 		RV=$?
 		;;
 	*)

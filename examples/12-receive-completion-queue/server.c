@@ -34,12 +34,12 @@ get_wc_and_validate(struct rpma_cq *cq, enum ibv_wc_opcode opcode,
 
 	if (ret == RPMA_E_NO_COMPLETION) {
 		if ((ret = rpma_cq_wait(cq))) {
-			printf("SERVER: get_wc_and_validate error #2: %i\n",
-				ret);
+			printf("SERVER: get_wc_and_validate #2: %s %i\n",
+				func_name, ret);
 			return ret;
 		} else if ((ret = rpma_cq_get_wc(cq, 1, &wc, NULL))) {
-			printf("SERVER: get_wc_and_validate error #3: %i\n",
-				ret);
+			printf("SERVER: get_wc_and_validate #3: %s %i\n",
+				func_name, ret);
 			return ret;
 		}
 	}
@@ -183,10 +183,6 @@ main(int argc, char *argv[])
 		/* send the new value to the client */
 		printf("SERVER: Value sent: %" PRIu64 "\n", *send);
 		if ((ret = rpma_send(conn, send_mr, 0, MSG_SIZE,
-				/*
-				 * XXX when using RPMA_F_COMPLETION_ON_ERROR
-				 * after few rounds rpma_send() returns ENOMEM.
-				 */
 				RPMA_F_COMPLETION_ALWAYS, NULL)))
 			break;
 

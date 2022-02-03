@@ -36,12 +36,12 @@ get_wc_and_validate(struct rpma_cq *cq, enum ibv_wc_opcode opcode,
 
 	if (ret == RPMA_E_NO_COMPLETION) {
 		if ((ret = rpma_cq_wait(cq))) {
-			printf("CLIENT: get_wc_and_validate error #2: %i\n",
-				ret);
+			printf("CLIENT: get_wc_and_validate #2: %s %i\n",
+				func_name, ret);
 			return ret;
 		} else if ((ret = rpma_cq_get_wc(cq, 1, &wc, NULL))) {
-			printf("CLIENT: get_wc_and_validate error #3: %i\n",
-				ret);
+			printf("CLIENT: get_wc_and_validate #3: %s %i\n",
+				func_name, ret);
 			return ret;
 		}
 	}
