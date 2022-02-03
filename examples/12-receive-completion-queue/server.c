@@ -27,14 +27,20 @@ get_wc_and_validate(struct rpma_cq *cq, enum ibv_wc_opcode opcode,
 
 	/* prepare send completions, get one and validate it */
 	int ret = rpma_cq_get_wc(cq, 1, &wc, NULL);
-	if (ret && ret != RPMA_E_NO_COMPLETION)
-		return -1;
+	if (ret && ret != RPMA_E_NO_COMPLETION) {
+		printf("SERVER: get_wc_and_validate error #1: %i\n", ret);
+		return ret;
+	}
 
 	if (ret == RPMA_E_NO_COMPLETION) {
 		if ((ret = rpma_cq_wait(cq))) {
-			return -1;
+			printf("SERVER: get_wc_and_validate error #2: %i\n",
+				ret);
+			return ret;
 		} else if ((ret = rpma_cq_get_wc(cq, 1, &wc, NULL))) {
-			return -1;
+			printf("SERVER: get_wc_and_validate error #3: %i\n",
+				ret);
+			return ret;
 		}
 	}
 
@@ -162,7 +168,7 @@ main(int argc, char *argv[])
 			break;
 
 		/* print the received old value of the client's counter */
-		(void) printf("SERVER: Value received: %" PRIu64 "\n", *recv);
+		printf("SERVER: Value received: %" PRIu64 "\n", *recv);
 
 		if (*recv == I_M_DONE)
 			break;
@@ -175,7 +181,7 @@ main(int argc, char *argv[])
 			break;
 
 		/* send the new value to the client */
-		(void) printf("SERVER: Value sent: %" PRIu64 "\n", *send);
+		printf("SERVER: Value sent: %" PRIu64 "\n", *send);
 		if ((ret = rpma_send(conn, send_mr, 0, MSG_SIZE,
 				/*
 				 * XXX when using RPMA_F_COMPLETION_ON_ERROR
@@ -189,6 +195,9 @@ main(int argc, char *argv[])
 		if (ret)
 			break;
 	}
+
+	if (ret)
+		printf("SERVER: error: %i\n", ret);
 
 err_conn_disconnect:
 	ret |= common_disconnect_and_wait_for_conn_close(&conn);

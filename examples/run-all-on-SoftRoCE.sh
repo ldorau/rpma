@@ -183,7 +183,7 @@ SFAILED=""
 N_CFAILED=0
 CFAILED=""
 
-for srv in $(find $BIN_DIR -name server | sort); do
+for srv in $(find $BIN_DIR -name server | sort -r); do
 	DIR=$(dirname $srv)
 	run_example $DIR
 done

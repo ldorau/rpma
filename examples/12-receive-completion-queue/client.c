@@ -29,14 +29,20 @@ get_wc_and_validate(struct rpma_cq *cq, enum ibv_wc_opcode opcode,
 
 	/* prepare send completions, get one and validate it */
 	int ret = rpma_cq_get_wc(cq, 1, &wc, NULL);
-	if (ret && ret != RPMA_E_NO_COMPLETION)
-		return -1;
+	if (ret && ret != RPMA_E_NO_COMPLETION) {
+		printf("CLIENT: get_wc_and_validate error #1: %i\n", ret);
+		return ret;
+	}
 
 	if (ret == RPMA_E_NO_COMPLETION) {
 		if ((ret = rpma_cq_wait(cq))) {
-			return -1;
+			printf("CLIENT: get_wc_and_validate error #2: %i\n",
+				ret);
+			return ret;
 		} else if ((ret = rpma_cq_get_wc(cq, 1, &wc, NULL))) {
-			return -1;
+			printf("CLIENT: get_wc_and_validate error #3: %i\n",
+				ret);
+			return ret;
 		}
 	}
 
@@ -151,7 +157,7 @@ main(int argc, char *argv[])
 			break;
 
 		/* send a message to the server */
-		(void) printf("CLIENT: Value sent: %" PRIu64 "\n", cntr);
+		printf("CLIENT: Value sent: %" PRIu64 "\n", cntr);
 		*send = cntr;
 		if ((ret = rpma_send(conn, send_mr, 0, MSG_SIZE,
 				/*
@@ -179,6 +185,9 @@ main(int argc, char *argv[])
 		if (sleep_usec > 0)
 			(void) usleep(sleep_usec);
 	}
+
+	if (ret)
+		printf("CLIENT: error: %i\n", ret);
 
 	/* send the I_M_DONE message */
 	*send = I_M_DONE;
