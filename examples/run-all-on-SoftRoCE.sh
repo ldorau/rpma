@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2020-2021, Intel Corporation
+# Copyright 2020-2022, Intel Corporation
 
 #
 # run-all-on-SoftRoCE.sh - run all examples on SoftRoCE (optionally under valgrind)
@@ -91,11 +91,11 @@ function run_example() {
 		RV=$?
 		;;
 	08-messages-ping-pong)
-		SEED=7
-		ROUNDS=3
+		SEED=1
+		ROUNDS=1000
 		echo "Starting the client ..."
 		$VLD_CCMD $DIR/client $IP_ADDRESS $PORT $SEED $ROUNDS
-		RV=$?
+		exit $?
 		;;
 	10-send-with-imm)
 		echo "Starting the client ..."
@@ -176,7 +176,7 @@ SFAILED=""
 N_CFAILED=0
 CFAILED=""
 
-for srv in $(find $BIN_DIR -name server | sort); do
+for srv in $(find $BIN_DIR -name server | sort -r); do
 	DIR=$(dirname $srv)
 	run_example $DIR
 done

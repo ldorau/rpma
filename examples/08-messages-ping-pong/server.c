@@ -112,11 +112,13 @@ main(int argc, char *argv[])
 	int recv_cmpl = 0;
 
 	while (1) {
+		printf("SERVER: before \n");
 		do {
 			/* get one completion and validate it */
 			ret = get_wc_and_validate(cq, recv, &send_cmpl,
 				&recv_cmpl);
-		} while (!send_cmpl || !recv_cmpl);
+		} while (!ret && (!send_cmpl || !recv_cmpl));
+		printf("SERVER: after \n");
 
 		if (ret)
 			break;

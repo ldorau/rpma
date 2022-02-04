@@ -117,11 +117,13 @@ main(int argc, char *argv[])
 		int send_cmpl = 0;
 		int recv_cmpl = 0;
 
+		printf("CLIENT: before \n");
 		do {
 			/* get one completion and validate it */
 			ret = get_wc_and_validate(cq, recv, &send_cmpl,
 				&recv_cmpl);
-		} while (!send_cmpl || !recv_cmpl);
+		} while (!ret && (!send_cmpl || !recv_cmpl));
+		printf("CLIENT: after \n");
 
 		if (ret)
 			break;
