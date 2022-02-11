@@ -6,7 +6,7 @@ description: ""
 disclaimer: "The contents of this web site and the associated <a href=\"https://github.com/pmem\">GitHub repositories</a> are BSD-licensed open source."
 aliases: ["rpma_cq_get_wc.3.html"]
 title: "librpma | PMDK"
-header: "librpma API version 0.11.0"
+header: "librpma API version 0.12.0"
 ---
 {{< manpages >}}
 
@@ -43,10 +43,10 @@ generate completions on error. The operations posted with the
 RPMA\_F\_COMPLETION\_ALWAYS flag also generate completions on success.
 
 Note that if the provided cq is the main CQ and the receive CQ is
-present on the same connection this function won\'t return
-RPMA\_OP\_RECV and RPMA\_OP\_RECV\_RDMA\_WITH\_IMM at any time. The
-receive CQ has to be used instead to collect these completions. Please
-see the **rpma\_conn\_get\_rcq**(3) for details about the receive CQ.
+present on the same connection this function won\'t return IBV\_WC\_RECV
+and IBV\_WC\_RECV\_RDMA\_WITH\_IMM at any time. The receive CQ has to be
+used instead to collect these completions. Please see the
+**rpma\_conn\_get\_rcq**(3) for details about the receive CQ.
 
 RETURN VALUE
 ============
