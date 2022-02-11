@@ -13,4 +13,4 @@
 # has to trigger the rebuild of all Docker images.
 #
 
-export IMG_VER=0.11.0
+export IMG_VER=archlinux
