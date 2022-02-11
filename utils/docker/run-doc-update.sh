@@ -4,10 +4,10 @@
 # Copyright 2018-2022, Intel Corporation
 #
 
-set -e
+set -ex
 
 WORKDIR=$(pwd)
-USER_NAME="pmem"
+USER_NAME="ldorau"
 BOT_NAME="pmem-bot"
 VERSION="master"
 SOURCE_BRANCH=${CI_BRANCH}
@@ -36,6 +36,8 @@ function commit_and_push_changes() {
 	local BRANCH_REMOTE=$3
 	local TITLE=$4
 
+	git diff
+
 	# Add, commit and push changes.
 	# The 'git commit' command may fail if there is nothing to commit.
 	# In such case we want to force push anyway (because there
@@ -44,20 +46,22 @@ function commit_and_push_changes() {
 	git commit -m "${TITLE}" || true
 	git push -f ${ORIGIN} ${BRANCH_LOCAL}
 
+	git log -1 -p
+
 	# Makes pull request.
 	# When there is already an open PR or there are no changes
 	# an error is thrown, which we ignore.
 	GITHUB_TOKEN=${DOC_UPDATE_GITHUB_TOKEN} hub pull-request -f \
 		-b ${USER_NAME}:${BRANCH_REMOTE} \
-		-h ${BOT_NAME}:${BRANCH_LOCAL} \
+		-h ${USER_NAME}:${BRANCH_LOCAL} \
 		-m "${TITLE}" || true
 }
 
 #
 # update man pages in the "rpma" repo
 #
-ORIGIN_RPMA="https://${DOC_UPDATE_GITHUB_TOKEN}@github.com/${BOT_NAME}/rpma"
-UPSTREAM_RPMA="https://github.com/${USER_NAME}/rpma"
+ORIGIN_RPMA="https://github.com/${BOT_NAME}/rpma"
+UPSTREAM_RPMA="https://${DOC_UPDATE_GITHUB_TOKEN}@github.com/${USER_NAME}/rpma"
 TARGET_BRANCH="man-pages"
 
 # set up the rpma repo
@@ -85,13 +89,13 @@ mkdir ${DOCS_DIR}
 cp -r ${WORKDIR}/md/*.md ${DOCS_DIR}
 
 # add, commit and push changes to the rpma repo
-commit_and_push_changes ${ORIGIN_RPMA} ${BRANCH_PR} ${TARGET_BRANCH} "doc: automatic update of man pages"
+commit_and_push_changes ${UPSTREAM_RPMA} ${BRANCH_PR} ${TARGET_BRANCH} "doc: automatic update of man pages"
 
 #
 # update man pages in the "pmem.github.io" repo
 #
-ORIGIN_PMEM_IO="https://${DOC_UPDATE_GITHUB_TOKEN}@github.com/${BOT_NAME}/pmem.github.io"
-UPSTREAM_PMEM_IO="https://github.com/${USER_NAME}/pmem.github.io"
+ORIGIN_PMEM_IO="https://github.com/${BOT_NAME}/pmem.github.io"
+UPSTREAM_PMEM_IO="https://${DOC_UPDATE_GITHUB_TOKEN}@github.com/${USER_NAME}/pmem.github.io"
 TARGET_BRANCH="main"
 
 # set up the pmem.github.io repo
@@ -111,6 +115,6 @@ mkdir ${DOCS_DIR}
 cp -r ${WORKDIR}/md/*.md ${DOCS_DIR}
 
 # add, commit and push changes to the pmem.github.io repo
-commit_and_push_changes ${ORIGIN_PMEM_IO} ${BRANCH_PR} ${TARGET_BRANCH} "rpma: automatic update of man pages"
+commit_and_push_changes ${UPSTREAM_PMEM_IO} ${BRANCH_PR} ${TARGET_BRANCH} "rpma: automatic update of man pages"
 
 exit 0
