@@ -53,6 +53,40 @@ function commit_and_push_changes() {
 		-m "${TITLE}" || true
 }
 
+# check if it is a release commit
+function is_release() {
+	ADDED=$(git log -1 -p | grep -e '+# set(VERSION_PRERELEASE' | wc -l)
+	[ $ADDED -ne 1 ] && return 0
+	REMOVED=$(git log -1 -p | grep -e '-set(VERSION_PRERELEASE' | wc -l)
+	[ $REMOVED -ne 1 ] && return 0
+	cat utils/mans_header.md | grep -e 'API version' | cut -d' ' -f5 | cut -d'"' -f1
+}
+
+function update_single_man_pages() {
+	MANS_DIR=$1
+
+	# clean old content, since some files might have been deleted
+	rm -rf ${MANS_DIR}
+	mkdir ${MANS_DIR}
+	# copy new man pages
+	cp -r ${WORKDIR}/md/*.md ${MANS_DIR}
+}
+
+function update_man_pages() {
+	DOCS_DIR=$1
+	VERSION=$2
+	RELEASE=$3
+
+	update_single_man_pages ${DOCS_DIR}/${VERSION}
+	# if it is a release commit, add also man pages for the new release
+	if [ "${RELEASE}" != "" ]; then
+		update_single_man_pages ${DOCS_DIR}/${RELEASE}
+	fi || true
+}
+
+# check if it is a release commit
+RELEASE=$(is_release)
+
 #
 # update man pages in the "rpma" repo
 #
@@ -77,12 +111,9 @@ BRANCH_PR="doc-automatic-update-of-man-pages"
 git checkout -B $BRANCH_PR upstream/${TARGET_BRANCH}
 git clean -dfx
 
-# clean old content, since some files might have been deleted
-DOCS_DIR=${WORKDIR}/rpma/manpages/${VERSION}/
-rm -r ${DOCS_DIR}
-mkdir ${DOCS_DIR}
-# copy new man pages
-cp -r ${WORKDIR}/md/*.md ${DOCS_DIR}
+# update man pages
+DOCS_DIR=${WORKDIR}/rpma/manpages/
+update_man_pages ${DOCS_DIR} ${VERSION} ${RELEASE}
 
 # add, commit and push changes to the rpma repo
 commit_and_push_changes ${ORIGIN_RPMA} ${BRANCH_PR} ${TARGET_BRANCH} "doc: automatic update of man pages"
@@ -103,12 +134,9 @@ BRANCH_PR="rpma-automatic-update-of-man-pages"
 git checkout -B $BRANCH_PR upstream/${TARGET_BRANCH}
 git clean -dfx
 
-# clean old content, since some files might have been deleted
-DOCS_DIR=${WORKDIR}/pmem.github.io/content/rpma/manpages/${VERSION}/
-rm -r ${DOCS_DIR}
-mkdir ${DOCS_DIR}
-# copy new man pages
-cp -r ${WORKDIR}/md/*.md ${DOCS_DIR}
+# update man pages
+DOCS_DIR=${WORKDIR}/pmem.github.io/content/rpma/manpages/
+update_man_pages ${DOCS_DIR} ${VERSION} ${RELEASE}
 
 # add, commit and push changes to the pmem.github.io repo
 commit_and_push_changes ${ORIGIN_PMEM_IO} ${BRANCH_PR} ${TARGET_BRANCH} "rpma: automatic update of man pages"
