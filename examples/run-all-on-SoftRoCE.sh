@@ -72,7 +72,8 @@ function run_example() {
 	echo "*** Running example: $EXAMPLE $VLD_MSG"
 
 	echo "Starting the server ..."
-	$VLD_SCMD $DIR/server $IP_ADDRESS $PORT &
+	echo $VLD_SCMD $DIR/server $IP_ADDRESS $PORT rxe_eno1 &
+	$VLD_SCMD $DIR/server $IP_ADDRESS $PORT rxe_eno1 &
 	sleep 1
 
 	RV=0
@@ -94,7 +95,8 @@ function run_example() {
 		SEED=7
 		ROUNDS=3
 		echo "Starting the client ..."
-		$VLD_CCMD $DIR/client $IP_ADDRESS $PORT $SEED $ROUNDS
+		echo $VLD_CCMD $DIR/client $IP_ADDRESS $PORT rxe_eno1 $SEED $ROUNDS
+		$VLD_CCMD $DIR/client $IP_ADDRESS $PORT rxe_eno1 $SEED $ROUNDS
 		RV=$?
 		;;
 	10-send-with-imm)

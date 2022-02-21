@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define USAGE_STR "usage: %s <server_address> <port>\n"
+#define USAGE_STR "usage: %s <server_address> <port> <device_name>\n"
 
 #include "common-conn.h"
 #include "messages-ping-pong-common.h"
@@ -23,7 +23,7 @@ int
 main(int argc, char *argv[])
 {
 	/* validate parameters */
-	if (argc < 3) {
+	if (argc < 4) {
 		fprintf(stderr, USAGE_STR, argv[0]);
 		exit(-1);
 	}
@@ -35,6 +35,7 @@ main(int argc, char *argv[])
 	/* read common parameters */
 	char *addr = argv[1];
 	char *port = argv[2];
+	char *device_name = argv[3];
 	int ret;
 
 	/* prepare memory */
@@ -58,7 +59,7 @@ main(int argc, char *argv[])
 	/*
 	 * lookup an ibv_context via the address and create a new peer using it
 	 */
-	if ((ret = server_peer_via_address(addr, &peer)))
+	if ((ret = common_peer_via_devname(device_name, &peer)))
 		goto err_free;
 
 	/* start a listening endpoint at addr:port */

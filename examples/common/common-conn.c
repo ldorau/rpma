@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2020-2021, Intel Corporation */
+/* Copyright 2020-2022, Intel Corporation */
 
 /*
  * common-conn.c -- a common connection functions used by examples
@@ -54,6 +54,23 @@ common_peer_via_address(const char *addr, enum rpma_util_ibv_context_type type,
 
 	/* create a new peer object */
 	return rpma_peer_new(ibv_ctx, peer_ptr);
+}
+
+/*
+ * common_peer_via_devname -- create a new RPMA peer based on ibv_context
+ * received by the provided device name
+ */
+int
+common_peer_via_devname(const char *addr, struct rpma_peer **peer_ptr)
+{
+	struct ibv_context *dev = NULL;
+
+	int ret = rpma_utils_get_ibv_ctx_by_dev(addr, &dev);
+	if (ret)
+		return ret;
+
+	/* create a new peer object */
+	return rpma_peer_new(dev, peer_ptr);
 }
 
 /*

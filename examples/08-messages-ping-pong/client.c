@@ -19,8 +19,8 @@
 #include "common-conn.h"
 #include "messages-ping-pong-common.h"
 
-#define USAGE_STR "usage: %s <server_address> <port> <seed> <rounds> " \
-		"[<sleep>]\n"
+#define USAGE_STR \
+	"usage: %s <server_address> <port> <device_name> <seed> <rounds> [<sleep>]\n"
 
 static uint64_t
 strtoul_noerror(const char *in)
@@ -37,7 +37,7 @@ int
 main(int argc, char *argv[])
 {
 	/* validate parameters */
-	if (argc < 5) {
+	if (argc < 6) {
 		fprintf(stderr, USAGE_STR, argv[0]);
 		exit(-1);
 	}
@@ -49,12 +49,13 @@ main(int argc, char *argv[])
 	/* read common parameters */
 	char *addr = argv[1];
 	char *port = argv[2];
-	uint64_t cntr = strtoul_noerror(argv[3]);
-	uint64_t rounds = strtoul_noerror(argv[4]);
+	char *device_name = argv[3];
+	uint64_t cntr = strtoul_noerror(argv[4]);
+	uint64_t rounds = strtoul_noerror(argv[5]);
 	uint64_t sleep_usec = 0;
 
-	if (argc >= 6)
-		sleep_usec = strtoul_noerror(argv[5]);
+	if (argc >= 7)
+		sleep_usec = strtoul_noerror(argv[6]);
 
 	int ret;
 
@@ -76,7 +77,7 @@ main(int argc, char *argv[])
 	/*
 	 * lookup an ibv_context via the address and create a new peer using it
 	 */
-	if ((ret = client_peer_via_address(addr, &peer)))
+	if ((ret = common_peer_via_devname(device_name, &peer)))
 		goto err_mr_free;
 
 	/* register the memory */
