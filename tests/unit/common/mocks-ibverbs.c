@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2020-2021, Intel Corporation */
+/* Copyright 2020-2022, Intel Corporation */
 /* Copyright 2021, Fujitsu */
 
 /*
@@ -372,3 +372,33 @@ ibv_advise_mr_mock(struct ibv_pd *pd,
 	return mock_type(int);
 }
 #endif
+
+/*
+ * ibv_get_device_name -- ibv_get_device_name() mock
+ */
+const char *
+ibv_get_device_name(struct ibv_device *device)
+{
+	/* XXX stub */
+	return NULL;
+}
+
+/*
+ * ibv_get_device_list -- ibv_get_device_list() mock
+ */
+struct ibv_device **
+ibv_get_device_list(int *num_devices)
+{
+	/* XXX stub */
+	return NULL;
+}
+
+/*
+ * ibv_open_device -- ibv_open_device() mock
+ */
+struct ibv_context *
+ibv_open_device(struct ibv_device *device)
+{
+	/* XXX stub */
+	return NULL;
+}

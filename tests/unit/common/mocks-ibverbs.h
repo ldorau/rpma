@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* Copyright 2020-2021, Intel Corporation */
+/* Copyright 2020-2022, Intel Corporation */
 /* Copyright 2021, Fujitsu */
 
 /*
@@ -77,5 +77,11 @@ int ibv_req_notify_cq_mock(struct ibv_cq *cq, int solicited_only);
 int ibv_advise_mr_mock(struct ibv_pd *pd, enum ibv_advise_mr_advice advice,
 		uint32_t flags, struct ibv_sge *sg_list, uint32_t num_sge);
 #endif
+
+const char *ibv_get_device_name(struct ibv_device *device);
+
+struct ibv_device **ibv_get_device_list(int *num_devices);
+
+struct ibv_context *ibv_open_device(struct ibv_device *device);
 
 #endif /* MOCKS_IBVERBS_H */

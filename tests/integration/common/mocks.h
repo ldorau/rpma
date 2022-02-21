@@ -83,6 +83,12 @@ int ibv_poll_cq_mock(struct ibv_cq *cq, int num_entries, struct ibv_wc *wc);
 
 int ibv_req_notify_cq_mock(struct ibv_cq *cq, int solicited_only);
 
+const char *ibv_get_device_name(struct ibv_device *device);
+
+struct ibv_device **ibv_get_device_list(int *num_devices);
+
+struct ibv_context *ibv_open_device(struct ibv_device *device);
+
 void *__real__test_malloc(size_t size);
 void *__wrap__test_malloc(size_t size);
 int __wrap_fprintf(FILE *__restrict __stream,
