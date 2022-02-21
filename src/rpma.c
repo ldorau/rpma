@@ -5,6 +5,7 @@
  * rpma.c -- entry points for librpma
  */
 
+#include <infiniband/verbs.h>
 #include <rdma/rdma_cma.h>
 
 #include "librpma.h"
@@ -134,4 +135,53 @@ rpma_utils_conn_event_2str(enum rpma_conn_event conn_event)
 	default:
 		return "Unsupported connection event";
 	}
+}
+
+/*
+ * rpma_utils_get_ibv_ctx_by_dev -- obtain an RDMA device context
+ * by an IB name of device
+ */
+int
+rpma_utils_get_ibv_ctx_by_dev(const char *device_name,
+		struct ibv_context **ibv_ctx_ptr)
+{
+	if (ibv_ctx_ptr == NULL)
+		return RPMA_E_INVAL;
+
+	struct ibv_device *dev = NULL;
+	int n_devices = 0;
+
+	struct ibv_device **devices = ibv_get_device_list(&n_devices);
+
+	if (n_devices < 1) {
+		fprintf(stderr, " Did not detect devices \n");
+		fprintf(stderr, " If device exists, check if driver is up\n");
+		return -1;
+	}
+
+	if (device_name == NULL) {
+		/* return the first one */
+		dev = devices[0];
+		if (dev == NULL) {
+			fprintf(stderr, "No IB devices found\n");
+			return -1;
+		}
+	} else {
+		for (; (dev = *devices); ++devices)
+			if (strcmp(ibv_get_device_name(dev), device_name) == 0)
+				break;
+		if (dev == NULL) {
+			fprintf(stderr, "IB device %s not found\n",
+				device_name);
+			return -1;
+		}
+	}
+
+	*ibv_ctx_ptr = ibv_open_device(dev);
+	if (*ibv_ctx_ptr == NULL) {
+		fprintf(stderr, " Couldn't get context for the device\n");
+		return -1;
+	}
+
+	return 0;
 }

@@ -490,6 +490,13 @@ int rpma_utils_get_ibv_context(const char *addr,
 		enum rpma_util_ibv_context_type type,
 		struct ibv_context **ibv_ctx_ptr);
 
+/*
+ * rpma_utils_get_ibv_ctx_by_dev -- obtain an RDMA device context
+ * by an IB name of device
+ */
+int rpma_utils_get_ibv_ctx_by_dev(const char *device_name,
+		struct ibv_context **ibv_ctx_ptr);
+
 /** 3
  * rpma_utils_ibv_context_is_odp_capable - is On-Demand Paging supported
  *

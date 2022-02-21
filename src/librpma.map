@@ -73,6 +73,7 @@ LIBRPMA_0.14 {
 		rpma_send_with_imm;
 		rpma_utils_conn_event_2str;
 		rpma_utils_get_ibv_context;
+		rpma_utils_get_ibv_ctx_by_dev;
 		rpma_utils_ibv_context_is_odp_capable;
 		rpma_write;
 		rpma_write_with_imm;
