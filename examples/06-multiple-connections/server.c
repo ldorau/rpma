@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2020-2021, Intel Corporation */
+/* Copyright 2020-2022, Intel Corporation */
 /* Copyright 2021-2022, Fujitsu */
 
 /*
@@ -208,21 +208,9 @@ client_handle_completion(struct custom_event *ce)
 	struct client_res *clnt = (struct client_res *)ce->arg;
 	const struct server_res *svr = clnt->svr;
 
-	/* wait for the completion to be ready */
-	int ret = rpma_cq_wait(clnt->cq);
-	if (ret) {
-		/* no completion is ready - continue */
-		if (ret == RPMA_E_NO_COMPLETION)
-			return;
-
-		/* another error occurred - disconnect */
-		(void) rpma_conn_disconnect(clnt->conn);
-		return;
-	}
-
 	/* get next completion */
 	struct ibv_wc wc;
-	ret = rpma_cq_get_wc(clnt->cq, 1, &wc, NULL);
+	int ret = rpma_cq_get_wc(clnt->cq, 1, &wc, NULL);
 	if (ret) {
 		/* no completion is ready - continue */
 		if (ret == RPMA_E_NO_COMPLETION)
