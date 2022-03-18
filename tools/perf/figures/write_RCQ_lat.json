@@ -1,0 +1,34 @@
+[
+    {
+        "output": {
+            "title": "Latency ({y}): GPSPM vs GPSPM(-RT) to PMEM",
+            "x": "bs",
+            "y": ["lat_avg"],
+            "file": "gpspm_pmem",
+            "key": "{y_key}",
+            "fstrings": ["title", "key"]
+        },
+        "series_common": {
+                        "tool_mode": "gpspm",
+            "filetype": "pmem",
+            "mode": "lat",
+            "tool": "fio",
+                        "requirements": {
+                                "direct_write_to_pmem": false
+                        },
+            "rw": ["randwrite", "write"],
+            "fstrings": ["label"]
+        },
+        "series": [
+            {
+                "busy_wait_polling": true,
+                "label": "GPSPM-RT {rw_order}"
+            },
+            {
+                "busy_wait_polling": false,
+                "label": "GPSPM {rw_order}"
+            }
+        ]
+    }
+]
+
