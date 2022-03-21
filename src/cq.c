@@ -19,11 +19,6 @@
 #include "cmocka_alloc.h"
 #endif
 
-struct rpma_cq {
-	struct ibv_comp_channel *channel; /* completion event channel */
-	struct ibv_cq *cq; /* completion queue */
-};
-
 /* internal librpma API */
 
 /*
@@ -48,19 +43,34 @@ rpma_cq_get_ibv_cq(const struct rpma_cq *cq)
 int
 rpma_cq_new(struct ibv_context *ibv_ctx, int cqe, struct rpma_cq **cq_ptr)
 {
+	int cq_ptr_alloced = 0;
 	int ret = 0;
 
-	/* create a completion channel */
-	struct ibv_comp_channel *channel = ibv_create_comp_channel(ibv_ctx);
-	if (channel == NULL) {
-		RPMA_LOG_ERROR_WITH_ERRNO(errno, "ibv_create_comp_channel()");
-		return RPMA_E_PROVIDER;
+	if (*cq_ptr == NULL) {
+		*cq_ptr = (struct rpma_cq *)calloc(1, sizeof(struct rpma_cq));
+		if (*cq_ptr == NULL)
+			return RPMA_E_NOMEM;
+		cq_ptr_alloced = 1;
+	}
+
+	if ((*cq_ptr)->channel == NULL) {
+		/* create a completion channel */
+		(*cq_ptr)->channel = ibv_create_comp_channel(ibv_ctx);
+		if ((*cq_ptr)->channel == NULL) {
+			RPMA_LOG_ERROR_WITH_ERRNO(errno,
+				"ibv_create_comp_channel()");
+			ret = RPMA_E_PROVIDER;
+			goto err_free;
+		}
+		(*cq_ptr)->reused_comp_channel = 0;
+	} else {
+		(*cq_ptr)->reused_comp_channel = 1;
 	}
 
 	/* create a CQ */
 	struct ibv_cq *cq = ibv_create_cq(ibv_ctx, cqe,
 				NULL /* cq_context */,
-				channel /* channel */,
+				(*cq_ptr)->channel /* channel */,
 				0 /* comp_vector */);
 	if (cq == NULL) {
 		RPMA_LOG_ERROR_WITH_ERRNO(errno, "ibv_create_cq()");
@@ -76,13 +86,6 @@ rpma_cq_new(struct ibv_context *ibv_ctx, int cqe, struct rpma_cq **cq_ptr)
 		goto err_destroy_cq;
 	}
 
-	*cq_ptr = (struct rpma_cq *)malloc(sizeof(struct rpma_cq));
-	if (*cq_ptr == NULL) {
-		ret = RPMA_E_NOMEM;
-		goto err_destroy_cq;
-	}
-
-	(*cq_ptr)->channel = channel;
 	(*cq_ptr)->cq = cq;
 
 	return 0;
@@ -91,7 +94,16 @@ err_destroy_cq:
 	(void) ibv_destroy_cq(cq);
 
 err_destroy_comp_channel:
-	(void) ibv_destroy_comp_channel(channel);
+	if (!(*cq_ptr)->reused_comp_channel) {
+		(void) ibv_destroy_comp_channel((*cq_ptr)->channel);
+		(*cq_ptr)->channel = NULL;
+	}
+
+err_free:
+	if (cq_ptr_alloced) {
+		free(*cq_ptr);
+		*cq_ptr = NULL;
+	}
 
 	return ret;
 }
@@ -119,10 +131,13 @@ rpma_cq_delete(struct rpma_cq **cq_ptr)
 		ret = RPMA_E_PROVIDER;
 	}
 
-	errno = ibv_destroy_comp_channel(cq->channel);
-	if (!ret && errno) {
-		RPMA_LOG_ERROR_WITH_ERRNO(errno, "ibv_destroy_comp_channel()");
-		ret = RPMA_E_PROVIDER;
+	if (cq->channel && !cq->reused_comp_channel) {
+		errno = ibv_destroy_comp_channel(cq->channel);
+		if (!ret && errno) {
+			RPMA_LOG_ERROR_WITH_ERRNO(errno,
+				"ibv_destroy_comp_channel()");
+			ret = RPMA_E_PROVIDER;
+		}
 	}
 
 	free(cq);

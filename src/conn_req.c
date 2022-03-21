@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2020-2021, Intel Corporation */
+/* Copyright 2020-2022, Intel Corporation */
 /* Copyright 2021, Fujitsu */
 
 /*
@@ -66,6 +66,14 @@ rpma_conn_req_from_id(struct rpma_peer *peer, struct rdma_cm_id *id,
 
 	struct rpma_cq *rcq = NULL;
 	if (rcqe) {
+		rcq = (struct rpma_cq *)calloc(1, sizeof(struct rpma_cq));
+		if (rcq == NULL) {
+			ret = RPMA_E_NOMEM;
+			goto err_rpma_cq_delete;
+		}
+
+		rcq->channel = cq->channel;
+
 		ret = rpma_cq_new(id->verbs, rcqe, &rcq);
 		if (ret)
 			goto err_rpma_cq_delete;
@@ -100,6 +108,8 @@ err_rpma_rcq_delete:
 
 err_rpma_cq_delete:
 	(void) rpma_cq_delete(&cq);
+
+	free(rcq);
 
 	return ret;
 }

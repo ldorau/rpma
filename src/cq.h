@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /* Copyright 2021, Fujitsu */
+/* Copyright 2022, Intel Corporation */
 
 /*
  * cq.h -- librpma completion-queue-related internal definitions
@@ -12,6 +13,12 @@
 #include <rdma/rdma_cma.h>
 
 #include "librpma.h"
+
+struct rpma_cq {
+	struct ibv_comp_channel *channel; /* completion event channel */
+	int reused_comp_channel;
+	struct ibv_cq *cq; /* completion queue */
+};
 
 /*
  * ERRORS
