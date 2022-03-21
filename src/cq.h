@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /* Copyright 2021, Fujitsu */
+/* Copyright 2022, Intel Corporation */
 
 /*
  * cq.h -- librpma completion-queue-related internal definitions
@@ -28,6 +29,17 @@ struct ibv_cq *rpma_cq_get_ibv_cq(const struct rpma_cq *cq);
  * - RPMA_E_NOMEM - out of memory
  */
 int rpma_cq_new(struct ibv_context *ibv_ctx, int cqe, struct rpma_cq **cq_ptr);
+
+/*
+ * ERRORS
+ * rpma_cq_new_with_channel() can fail with the following errors:
+ *
+ * - RPMA_E_PROVIDER - ibv_create_comp_channel(3), ibv_create_cq(3) or
+ * ibv_req_notify_cq(3) failed with a provider error
+ * - RPMA_E_NOMEM - out of memory
+ */
+int rpma_cq_new_with_channel(struct ibv_context *ibv_ctx, int cqe,
+		struct rpma_cq *parent_cq, struct rpma_cq **cq_ptr);
 
 /*
  * ERRORS

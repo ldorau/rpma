@@ -21,6 +21,7 @@
 
 struct rpma_cq {
 	struct ibv_comp_channel *channel; /* completion event channel */
+	int channel_reused; /* completion event channel is reused */
 	struct ibv_cq *cq; /* completion queue */
 };
 
@@ -83,6 +84,7 @@ rpma_cq_new(struct ibv_context *ibv_ctx, int cqe, struct rpma_cq **cq_ptr)
 	}
 
 	(*cq_ptr)->channel = channel;
+	(*cq_ptr)->channel_reused = 0;
 	(*cq_ptr)->cq = cq;
 
 	return 0;
@@ -92,6 +94,47 @@ err_destroy_cq:
 
 err_destroy_comp_channel:
 	(void) ibv_destroy_comp_channel(channel);
+
+	return ret;
+}
+
+/*
+ * rpma_cq_new_with_channel -- create a CQ and then encapsulate them
+ * in a rpma_cq object with given completion channel
+ *
+ * ASSUMPTIONS
+ * - ibv_ctx != NULL && cq_ptr != NULL
+ */
+int
+rpma_cq_new_with_channel(struct ibv_context *ibv_ctx, int cqe,
+		struct rpma_cq *parent_cq, struct rpma_cq **cq_ptr)
+{
+	int ret = 0;
+
+	/* create a CQ */
+	struct ibv_cq *cq = ibv_create_cq(ibv_ctx, cqe,
+				NULL /* cq_context */,
+				parent_cq->channel /* channel */,
+				0 /* comp_vector */);
+	if (cq == NULL) {
+		RPMA_LOG_ERROR_WITH_ERRNO(errno, "ibv_create_cq()");
+		return RPMA_E_PROVIDER;
+	}
+
+	*cq_ptr = (struct rpma_cq *)malloc(sizeof(struct rpma_cq));
+	if (*cq_ptr == NULL) {
+		ret = RPMA_E_NOMEM;
+		goto err_destroy_cq;
+	}
+
+	(*cq_ptr)->channel = parent_cq->channel;
+	(*cq_ptr)->channel_reused = 1;
+	(*cq_ptr)->cq = cq;
+
+	return 0;
+
+err_destroy_cq:
+	(void) ibv_destroy_cq(cq);
 
 	return ret;
 }
@@ -119,10 +162,13 @@ rpma_cq_delete(struct rpma_cq **cq_ptr)
 		ret = RPMA_E_PROVIDER;
 	}
 
-	errno = ibv_destroy_comp_channel(cq->channel);
-	if (!ret && errno) {
-		RPMA_LOG_ERROR_WITH_ERRNO(errno, "ibv_destroy_comp_channel()");
-		ret = RPMA_E_PROVIDER;
+	if (!cq->channel_reused) {
+		errno = ibv_destroy_comp_channel(cq->channel);
+		if (!ret && errno) {
+			RPMA_LOG_ERROR_WITH_ERRNO(errno,
+				"ibv_destroy_comp_channel()");
+			ret = RPMA_E_PROVIDER;
+		}
 	}
 
 	free(cq);

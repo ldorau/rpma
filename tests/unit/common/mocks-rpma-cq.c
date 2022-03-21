@@ -65,6 +65,31 @@ rpma_cq_new(struct ibv_context *ibv_ctx, int cqe, struct rpma_cq **cq_ptr)
 }
 
 /*
+ * rpma_cq_new_with_channel -- rpma_cq_new_with_channel() mock
+ */
+int
+rpma_cq_new_with_channel(struct ibv_context *ibv_ctx, int cqe,
+		struct rpma_cq *parent_cq, struct rpma_cq **cq_ptr)
+{
+	assert_non_null(ibv_ctx);
+	check_expected(cqe);
+	assert_non_null(cq_ptr);
+
+	struct rpma_cq *cq = mock_type(struct rpma_cq *);
+	if (!cq) {
+		int result = mock_type(int);
+		/* XXX validate the errno handling */
+		if (result == RPMA_E_PROVIDER)
+			errno = mock_type(int);
+
+		return result;
+	}
+
+	*cq_ptr = cq;
+	return 0;
+}
+
+/*
  * rpma_cq_delete -- rpma_cq_delete() mock
  */
 int
