@@ -26,7 +26,7 @@ else
 fi
 
 if [ x"$VLD_TEST" == x"--valgrind" ]; then
-	VLD_CMD="valgrind --leak-check=yes"
+	VLD_CMD="valgrind --leak-check=full"
 	VLD_SUPP_PATH=$(dirname $0)/../tests/
 	VLD_SUPP="--suppressions=${VLD_SUPP_PATH}/memcheck-libibverbs.supp"
 	VLD_SUPP="${VLD_SUPP} --suppressions=${VLD_SUPP_PATH}/memcheck-libnl.supp"
@@ -43,6 +43,8 @@ if [ x"$VLD_TEST" == x"--valgrind" ]; then
 	echo "Running examples with Valgrind is tuned for debug build of librpma on Ubuntu 20.04 (see the CircleCI build)."
 	echo "It may fail for any other OS, OS version, rdma-core version and for the release build."
 	echo
+	VLD_SCMD_ORIG=$VLD_SCMD
+	VLD_CCMD_ORIG=$VLD_CCMD
 fi
 
 MODULE="rdma_rxe"
@@ -74,9 +76,28 @@ function verify_SoftRoCE() {
 	echo
 }
 
+#
+# run_example <directory> [server-fault-injection] [client-fault-injection]
+#
 function run_example() {
 	DIR=$1
 	EXAMPLE=$(basename $DIR)
+
+	if [ "$2" != "" ]; then
+		SRV=""
+		VLD_SCMD=""
+	else
+		SRV="RPMA_FAULT_INJECTION=$2"
+		VLD_SCMD=$VLD_SCMD_ORIG
+	fi
+
+	if [ $3 -eq 0 ]; then
+		CLT=""
+		VLD_CCMD=""
+	else
+		CLT="RPMA_FAULT_INJECTION=$3"
+		VLD_CCMD=$VLD_CCMD_ORIG
+	fi
 
 	echo "*** Running example: $EXAMPLE $VLD_MSG"
 
@@ -194,9 +215,34 @@ SFAILED=""
 N_CFAILED=0
 CFAILED=""
 
-for srv in $(find $BIN_DIR -name server | sort); do
-	DIR=$(dirname $srv)
-	run_example $DIR
+for iter in $(seq 25 100); do
+	for srv in $(find $BIN_DIR -name server | sort); do
+		DIR=$(dirname $srv)
+		run_example $DIR 0 $iter
+		if [ $N_SFAILED -gt 0 -o $N_CFAILED -gt 0 ]; then
+			echo
+			echo "==================================="
+			echo "SRV=$SRV"
+			echo "CLT=$CLT"
+			echo "==================================="
+			echo
+			exit 1
+		fi
+	done
+
+	for srv in $(find $BIN_DIR -name server | sort); do
+		DIR=$(dirname $srv)
+		run_example $DIR $iter 0
+		if [ $N_SFAILED -gt 0 -o $N_CFAILED -gt 0 ]; then
+			echo
+			echo "==================================="
+			echo "SRV=$SRV"
+			echo "CLT=$CLT"
+			echo "==================================="
+			echo
+			exit 1
+		fi
+	done
 done
 
 if [ $N_FAILED -gt 0 ]; then
