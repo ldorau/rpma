@@ -21,6 +21,7 @@
 
 struct rpma_cq {
 	struct ibv_comp_channel *channel; /* completion event channel */
+	int own_comp_channel;
 	struct ibv_cq *cq; /* completion queue */
 };
 
@@ -36,6 +37,93 @@ struct ibv_cq *
 rpma_cq_get_ibv_cq(const struct rpma_cq *cq)
 {
 	return cq->cq;
+}
+
+/*
+ * rpma_comp_channel_new -- create a completion channel
+ *
+ * ASSUMPTIONS
+ * - ibv_ctx != NULL && channel_ptr != NULL
+ */
+int
+rpma_comp_channel_new(struct ibv_context *ibv_ctx,
+		struct ibv_comp_channel **channel_ptr)
+{
+	/* create a completion channel */
+	*channel_ptr = ibv_create_comp_channel(ibv_ctx);
+	if (*channel_ptr == NULL) {
+		RPMA_LOG_ERROR_WITH_ERRNO(errno, "ibv_create_comp_channel()");
+		return RPMA_E_PROVIDER;
+	}
+
+	return 0;
+}
+
+/*
+ * rpma_comp_channel_destroy -- destroy a completion channel
+ *
+ * ASSUMPTIONS
+ * - channel != NULL
+ */
+int
+rpma_comp_channel_destroy(struct ibv_comp_channel *channel)
+{
+	errno = ibv_destroy_comp_channel(channel);
+	if (errno) {
+		RPMA_LOG_ERROR_WITH_ERRNO(errno, "ibv_destroy_comp_channel()");
+		return RPMA_E_PROVIDER;
+	}
+
+	return 0;
+}
+
+/*
+ * rpma_cq_new_with_channel -- create a completion channel and CQ and then
+ * encapsulate them in a rpma_cq object
+ *
+ * ASSUMPTIONS
+ * - ibv_ctx != NULL && cq_ptr != NULL && channel != NULL
+ */
+int
+rpma_cq_new_with_channel(struct ibv_context *ibv_ctx, int cqe,
+		struct ibv_comp_channel *channel, struct rpma_cq **cq_ptr)
+{
+	int ret = 0;
+
+	/* create a CQ */
+	struct ibv_cq *cq = ibv_create_cq(ibv_ctx, cqe,
+				NULL /* cq_context */,
+				channel /* channel */,
+				0 /* comp_vector */);
+	if (cq == NULL) {
+		RPMA_LOG_ERROR_WITH_ERRNO(errno, "ibv_create_cq()");
+		return RPMA_E_PROVIDER;
+	}
+
+	/* request for the next completion on the completion channel */
+	errno = ibv_req_notify_cq(cq, 0 /* all completions */);
+	if (errno) {
+		RPMA_LOG_ERROR_WITH_ERRNO(errno, "ibv_req_notify_cq()");
+		ret = RPMA_E_PROVIDER;
+		goto err_destroy_cq;
+	}
+
+	*cq_ptr = (struct rpma_cq *)malloc(sizeof(struct rpma_cq));
+	if (*cq_ptr == NULL) {
+		ret = RPMA_E_NOMEM;
+		goto err_destroy_cq;
+	}
+
+	(*cq_ptr)->channel = channel;
+	(*cq_ptr)->own_comp_channel = 0;
+	(*cq_ptr)->cq = cq;
+
+	return 0;
+
+err_destroy_cq:
+	(void) ibv_destroy_cq(cq);
+
+	return ret;
 }
 
 /*
@@ -57,38 +145,14 @@ rpma_cq_new(struct ibv_context *ibv_ctx, int cqe, struct rpma_cq **cq_ptr)
 		return RPMA_E_PROVIDER;
 	}
 
-	/* create a CQ */
-	struct ibv_cq *cq = ibv_create_cq(ibv_ctx, cqe,
-				NULL /* cq_context */,
-				channel /* channel */,
-				0 /* comp_vector */);
-	if (cq == NULL) {
-		RPMA_LOG_ERROR_WITH_ERRNO(errno, "ibv_create_cq()");
-		ret = RPMA_E_PROVIDER;
+	ret = rpma_cq_new_with_channel(ibv_ctx, cqe, channel, cq_ptr);
+	if (ret)
 		goto err_destroy_comp_channel;
-	}
-
-	/* request for the next completion on the completion channel */
-	errno = ibv_req_notify_cq(cq, 0 /* all completions */);
-	if (errno) {
-		RPMA_LOG_ERROR_WITH_ERRNO(errno, "ibv_req_notify_cq()");
-		ret = RPMA_E_PROVIDER;
-		goto err_destroy_cq;
-	}
-
-	*cq_ptr = (struct rpma_cq *)malloc(sizeof(struct rpma_cq));
-	if (*cq_ptr == NULL) {
-		ret = RPMA_E_NOMEM;
-		goto err_destroy_cq;
-	}
 
 	(*cq_ptr)->channel = channel;
-	(*cq_ptr)->cq = cq;
+	(*cq_ptr)->own_comp_channel = 1;
 
 	return 0;
-
-err_destroy_cq:
-	(void) ibv_destroy_cq(cq);
 
 err_destroy_comp_channel:
 	(void) ibv_destroy_comp_channel(channel);
@@ -119,10 +183,13 @@ rpma_cq_delete(struct rpma_cq **cq_ptr)
 		ret = RPMA_E_PROVIDER;
 	}
 
-	errno = ibv_destroy_comp_channel(cq->channel);
-	if (!ret && errno) {
-		RPMA_LOG_ERROR_WITH_ERRNO(errno, "ibv_destroy_comp_channel()");
-		ret = RPMA_E_PROVIDER;
+	if (cq->own_comp_channel) {
+		errno = ibv_destroy_comp_channel(cq->channel);
+		if (!ret && errno) {
+			RPMA_LOG_ERROR_WITH_ERRNO(errno,
+				"ibv_destroy_comp_channel()");
+			ret = RPMA_E_PROVIDER;
+		}
 	}
 
 	free(cq);
