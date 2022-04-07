@@ -252,12 +252,24 @@ main(int argc, char *argv[])
 
 	/* wait for the receive completion to be ready */
 	struct rpma_cq *rcq = NULL;
-	if ((ret = rpma_conn_get_rcq(conn, &rcq)))
+	if ((ret = rpma_conn_get_rcq(conn, &rcq))) {
+		(void) fprintf(stderr,
+				"error: rpma_conn_get_rcq() failed: %s\n",
+				rpma_err_2str(ret));
 		goto err_conn_delete;
-	if ((ret = rpma_cq_wait(rcq)))
+	}
+
+	if ((ret = rpma_cq_wait(rcq))) {
+		(void) fprintf(stderr, "error: rpma_cq_wait() failed: %s\n",
+				rpma_err_2str(ret));
 		goto err_conn_delete;
-	if ((ret = rpma_cq_get_wc(rcq, 1, &wc, NULL)))
+	}
+
+	if ((ret = rpma_cq_get_wc(rcq, 1, &wc, NULL))) {
+		(void) fprintf(stderr, "error: rpma_cq_get_wc() failed: %s\n",
+				rpma_err_2str(ret));
 		goto err_conn_delete;
+	}
 
 	/* validate the receive completion */
 	if (wc.status != IBV_WC_SUCCESS) {

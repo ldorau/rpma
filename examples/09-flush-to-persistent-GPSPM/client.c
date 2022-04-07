@@ -229,8 +229,8 @@ main(int argc, char *argv[])
 		goto err_mr_remote_delete;
 	} else if (dst_size < KILOBYTE) {
 		fprintf(stderr,
-				"Size of the remote memory region is too small for writing the data of the assumed size (%zu < %d)\n",
-				dst_size, KILOBYTE);
+			"Size of the remote memory region is too small for writing the data of the assumed size (%zu < %d)\n",
+			dst_size, KILOBYTE);
 		goto err_mr_remote_delete;
 	}
 
@@ -251,26 +251,40 @@ main(int argc, char *argv[])
 	flush_req_size = gpspm_flush_request__get_packed_size(&flush_req);
 	if (flush_req_size > MSG_SIZE_MAX) {
 		fprintf(stderr,
-				"Packed flush request size is bigger than available send buffer space (%"
-				PRIu64 " > %d\n", flush_req_size,
-				MSG_SIZE_MAX);
+			"Packed flush request size is bigger than available send buffer space (%"
+			PRIu64 " > %d\n", flush_req_size,
+			MSG_SIZE_MAX);
 		goto err_mr_remote_delete;
 	}
 	(void) gpspm_flush_request__pack(&flush_req, send_ptr);
 
 	/* send the flush message */
 	if ((ret = rpma_send(conn, msg_mr, SEND_OFFSET, flush_req_size,
-			RPMA_F_COMPLETION_ALWAYS, NULL)))
+			RPMA_F_COMPLETION_ALWAYS, NULL))) {
+		(void) fprintf(stderr, "error: rpma_send() failed: %s\n",
+				rpma_err_2str(ret));
 		goto err_mr_remote_delete;
+	}
 
 	/* wait for the send completion to be ready */
 	struct rpma_cq *cq = NULL;
-	if ((ret = rpma_conn_get_cq(conn, &cq)))
+	if ((ret = rpma_conn_get_cq(conn, &cq))) {
+		(void) fprintf(stderr, "error: rpma_conn_get_cq() failed: %s\n",
+				rpma_err_2str(ret));
 		goto err_mr_remote_delete;
-	if ((ret = rpma_cq_wait(cq)))
+	}
+
+	if ((ret = rpma_cq_wait(cq))) {
+		(void) fprintf(stderr, "error: rpma_cq_wait() failed: %s\n",
+				rpma_err_2str(ret));
 		goto err_mr_remote_delete;
-	if ((ret = rpma_cq_get_wc(cq, 1, &wc, NULL)))
+	}
+
+	if ((ret = rpma_cq_get_wc(cq, 1, &wc, NULL))) {
+		(void) fprintf(stderr, "error: rpma_cq_get_wc() failed: %s\n",
+				rpma_err_2str(ret));
 		goto err_mr_remote_delete;
+	}
 
 	/* validate the send completion */
 	if (wc.status != IBV_WC_SUCCESS) {
@@ -292,12 +306,24 @@ main(int argc, char *argv[])
 
 	/* wait for the receive completion to be ready */
 	struct rpma_cq *rcq = NULL;
-	if ((ret = rpma_conn_get_rcq(conn, &rcq)))
+	if ((ret = rpma_conn_get_rcq(conn, &rcq))) {
+		(void) fprintf(stderr,
+				"error: rpma_conn_get_rcq() failed: %s\n",
+				rpma_err_2str(ret));
 		goto err_mr_remote_delete;
-	if ((ret = rpma_cq_wait(rcq)))
+	}
+
+	if ((ret = rpma_cq_wait(rcq))) {
+		(void) fprintf(stderr, "error: rpma_cq_wait() failed: %s\n",
+				rpma_err_2str(ret));
 		goto err_mr_remote_delete;
-	if ((ret = rpma_cq_get_wc(rcq, 1, &wc, NULL)))
+	}
+
+	if ((ret = rpma_cq_get_wc(rcq, 1, &wc, NULL))) {
+		(void) fprintf(stderr, "error: rpma_cq_get_wc() failed: %s\n",
+				rpma_err_2str(ret));
 		goto err_mr_remote_delete;
+	}
 
 	/* validate the receive completion */
 	if (wc.status != IBV_WC_SUCCESS) {

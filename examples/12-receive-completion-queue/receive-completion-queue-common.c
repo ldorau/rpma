@@ -17,11 +17,17 @@ get_wc_and_validate(struct rpma_cq *cq, enum ibv_wc_opcode opcode,
 	struct ibv_wc wc;
 	int ret;
 
-	if ((ret = rpma_cq_wait(cq)))
-			return ret;
+	if ((ret = rpma_cq_wait(cq))) {
+		(void) fprintf(stderr, "error: rpma_cq_wait() failed: %s\n",
+				rpma_err_2str(ret));
+		return ret;
+	}
 
-	if ((ret = rpma_cq_get_wc(cq, 1, &wc, NULL)))
-			return ret;
+	if ((ret = rpma_cq_get_wc(cq, 1, &wc, NULL))) {
+		(void) fprintf(stderr, "error: rpma_cq_get_wc() failed: %s\n",
+				rpma_err_2str(ret));
+		return ret;
+	}
 
 	if (wc.status != IBV_WC_SUCCESS) {
 		(void) fprintf(stderr, "%s failed: %s\n",
