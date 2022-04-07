@@ -96,10 +96,6 @@ main(int argc, char *argv[])
 	if ((ret = rpma_conn_cfg_set_rcq_size(cfg, RCQ_SIZE)))
 		goto err_cfg_delete;
 
-	/* use separate completion channels for CQ and RCQ */
-	if ((ret = rpma_conn_cfg_set_compl_channel(cfg, false)))
-		goto err_cfg_delete;
-
 	/* establish a new connection to a server listening at addr:port */
 	if ((ret = client_connect(peer, addr, port, cfg, NULL, &conn)))
 		goto err_cfg_delete;
@@ -127,11 +123,12 @@ main(int argc, char *argv[])
 			break;
 
 		/* get one send completion and validate it */
-		if ((ret = get_wc_and_validate(cq, IBV_WC_SEND, "rpma_send()")))
+		if ((ret = get_wc_and_validate(conn, cq, IBV_WC_SEND,
+				"rpma_send()")))
 			break;
 
 		/* get one receive completion and validate it */
-		if ((ret = get_wc_and_validate(rcq, IBV_WC_RECV,
+		if ((ret = get_wc_and_validate(conn, rcq, IBV_WC_RECV,
 				"rpma_recv()")))
 			break;
 

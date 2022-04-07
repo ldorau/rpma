@@ -216,10 +216,6 @@ main(int argc, char *argv[])
 	if ((ret = rpma_conn_cfg_set_rcq_size(cfg, RCQ_SIZE)))
 		goto err_cfg_delete;
 
-	/* use separate completion channels for CQ and RCQ */
-	if ((ret = rpma_conn_cfg_set_compl_channel(cfg, false)))
-		goto err_cfg_delete;
-
 	/*
 	 * Wait for an incoming connection request, accept it and wait for its
 	 * establishment.
@@ -256,12 +252,27 @@ main(int argc, char *argv[])
 
 	/* wait for the receive completion to be ready */
 	struct rpma_cq *rcq = NULL;
-	if ((ret = rpma_conn_get_rcq(conn, &rcq)))
+	if ((ret = rpma_conn_get_rcq(conn, &rcq))) {
+		(void) fprintf(stderr,
+				"error: rpma_conn_get_rcq() failed: %s\n",
+				rpma_err_2str(ret));
 		goto err_conn_delete;
-	if ((ret = rpma_cq_wait(rcq)))
+	}
+	struct rpma_cq *cq_got = NULL;
+	if ((ret = rpma_conn_wait(conn, &cq_got))) {
+		(void) fprintf(stderr, "error: rpma_conn_wait() failed: %s\n",
+				rpma_err_2str(ret));
 		goto err_conn_delete;
-	if ((ret = rpma_cq_get_wc(rcq, 1, &wc, NULL)))
+	}
+	if (cq_got != rcq) {
+		(void) fprintf(stderr, "error: got unexpected CQ\n");
 		goto err_conn_delete;
+	}
+	if ((ret = rpma_cq_get_wc(rcq, 1, &wc, NULL))) {
+		(void) fprintf(stderr, "error: rpma_cq_get_wc() failed: %s\n",
+				rpma_err_2str(ret));
+		goto err_conn_delete;
+	}
 
 	/* validate the receive completion */
 	if (wc.status != IBV_WC_SUCCESS) {
@@ -322,8 +333,16 @@ main(int argc, char *argv[])
 	struct rpma_cq *cq = NULL;
 	if ((ret = rpma_conn_get_cq(conn, &cq)))
 		goto err_conn_delete;
-	if ((ret = rpma_cq_wait(cq)))
+	cq_got = NULL;
+	if ((ret = rpma_conn_wait(conn, &cq_got))) {
+		(void) fprintf(stderr, "error: rpma_conn_wait() failed: %s\n",
+				rpma_err_2str(ret));
 		goto err_conn_delete;
+	}
+	if (cq_got != cq) {
+		(void) fprintf(stderr, "error: got unexpected CQ\n");
+		goto err_conn_delete;
+	}
 	if ((ret = rpma_cq_get_wc(cq, 1, &wc, NULL)))
 		goto err_conn_delete;
 
