@@ -13,6 +13,7 @@
 #include <rdma/rdma_cma.h>
 
 #include "librpma.h"
+#include "comp_channel.h"
 
 /*
  * ERRORS
@@ -29,7 +30,7 @@ struct ibv_cq *rpma_cq_get_ibv_cq(const struct rpma_cq *cq);
  * - RPMA_E_NOMEM - out of memory
  */
 int rpma_cq_new(struct ibv_context *ibv_ctx, int cqe,
-		struct ibv_comp_channel *shared_channel,
+		struct rpma_comp_channel *shared_channel,
 		struct rpma_cq **cq_ptr);
 
 /*

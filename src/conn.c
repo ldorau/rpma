@@ -26,7 +26,7 @@ struct rpma_conn {
 	struct rdma_event_channel *evch; /* event channel of the CM ID */
 	struct rpma_cq *cq; /* main CQ */
 	struct rpma_cq *rcq; /* receive CQ */
-	struct ibv_comp_channel *channel; /* shared completion channel */
+	struct rpma_comp_channel *channel; /* shared completion channel */
 
 	struct rpma_conn_private_data data; /* private data of the CM ID */
 	struct rpma_flush *flush; /* flushing object */
@@ -46,7 +46,7 @@ struct rpma_conn {
 int
 rpma_conn_new(struct rpma_peer *peer, struct rdma_cm_id *id,
 		struct rpma_cq *cq, struct rpma_cq *rcq,
-		struct ibv_comp_channel *channel, struct rpma_conn **conn_ptr)
+		struct rpma_comp_channel *channel, struct rpma_conn **conn_ptr)
 {
 	if (peer == NULL || id == NULL || cq == NULL || conn_ptr == NULL)
 		return RPMA_E_INVAL;
@@ -218,7 +218,8 @@ rpma_conn_wait(struct rpma_conn *conn, struct rpma_cq **cq)
 	/* wait for the completion event */
 	struct ibv_cq *ev_cq;	/* CQ that got the event */
 	void *ev_ctx;		/* unused */
-	if (ibv_get_cq_event(conn->channel, &ev_cq, &ev_ctx))
+	if (ibv_get_cq_event(rpma_comp_channel_get(conn->channel),
+				&ev_cq, &ev_ctx))
 		return RPMA_E_NO_COMPLETION;
 
 	if (ev_cq == rpma_cq_get_ibv_cq(conn->cq)) {
@@ -260,9 +261,7 @@ rpma_conn_get_compl_fd(const struct rpma_conn *conn, int *fd)
 	if (conn == NULL || fd == NULL)
 		return RPMA_E_INVAL;
 
-	*fd = conn->channel->fd;
-
-	return 0;
+	return rpma_comp_channel_get_fd(conn->channel, fd);
 }
 
 /*

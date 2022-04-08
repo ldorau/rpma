@@ -34,7 +34,7 @@ struct rpma_conn_req {
 	/* receive CQ */
 	struct rpma_cq *rcq;
 	/* shared completion channel */
-	struct ibv_comp_channel *channel;
+	struct rpma_comp_channel *channel;
 
 	/* private data of the CM ID (incoming only) */
 	struct rpma_conn_private_data data;
@@ -86,7 +86,7 @@ rpma_conn_req_from_id(struct rpma_peer *peer, struct rdma_cm_id *id,
 	/* get if the completion channel should be shared by CQ and RCQ */
 	(void) rpma_conn_cfg_get_compl_channel(cfg, &shared);
 
-	struct ibv_comp_channel *channel = NULL;
+	struct rpma_comp_channel *channel = NULL;
 	if (shared && rcqe) {
 		ret = rpma_comp_channel_new(id->verbs, &channel);
 		if (ret)

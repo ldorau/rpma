@@ -45,7 +45,7 @@ rpma_cq_wait(struct rpma_cq *cq)
  */
 int
 rpma_cq_new(struct ibv_context *ibv_ctx, int cqe,
-		struct ibv_comp_channel *shared_channel,
+		struct rpma_comp_channel *shared_channel,
 		struct rpma_cq **cq_ptr)
 {
 	assert_non_null(ibv_ctx);
@@ -105,7 +105,7 @@ rpma_cq_get_ibv_cq(const struct rpma_cq *cq)
  */
 int
 rpma_comp_channel_new(struct ibv_context *ibv_ctx,
-		struct ibv_comp_channel **channel_ptr)
+		struct rpma_comp_channel **channel_ptr)
 {
 	/*
 	 * XXXXXX write the full mock for this function.
@@ -117,7 +117,7 @@ rpma_comp_channel_new(struct ibv_context *ibv_ctx,
  * rpma_comp_channel_destroy -- rpma_comp_channel_destroy() mock
  */
 int
-rpma_comp_channel_destroy(struct ibv_comp_channel *channel)
+rpma_comp_channel_destroy(struct rpma_comp_channel *channel)
 {
 	/*
 	 * XXXXXX write the full mock for this function.

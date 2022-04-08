@@ -10,6 +10,7 @@
 #define LIBRPMA_CONN_H
 
 #include "librpma.h"
+#include "comp_channel.h"
 #include "cq.h"
 
 #include <rdma/rdma_cma.h>
@@ -25,7 +26,7 @@
  */
 int rpma_conn_new(struct rpma_peer *peer, struct rdma_cm_id *id,
 		struct rpma_cq *cq, struct rpma_cq *rcq,
-		struct ibv_comp_channel *channel, struct rpma_conn **conn_ptr);
+		struct rpma_comp_channel *channel, struct rpma_conn **conn_ptr);
 
 /*
  * rpma_conn_transfer_private_data -- transfer the private data to

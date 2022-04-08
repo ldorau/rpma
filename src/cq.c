@@ -20,7 +20,7 @@
 #endif
 
 struct rpma_cq {
-	struct ibv_comp_channel *channel; /* completion channel */
+	struct rpma_comp_channel *channel; /* completion channel */
 	bool shared_comp_channel; /* completion channel is shared */
 	struct ibv_cq *cq; /* completion queue */
 };
@@ -48,16 +48,17 @@ rpma_cq_get_ibv_cq(const struct rpma_cq *cq)
  */
 int
 rpma_cq_new(struct ibv_context *ibv_ctx, int cqe,
-		struct ibv_comp_channel *shared_channel,
+		struct rpma_comp_channel *shared_channel,
 		struct rpma_cq **cq_ptr)
 {
-	struct ibv_comp_channel *channel;
+	struct rpma_comp_channel *channel;
 	int ret = 0;
 
 	if (shared_channel) {
 		channel = shared_channel;
 	} else {
-		/* create a completion channel */
+		/* create a separate completion channel */
+		ret = rpma_comp_channel_new(ibv_ctx)
 		channel = ibv_create_comp_channel(ibv_ctx);
 		if (channel == NULL) {
 			RPMA_LOG_ERROR_WITH_ERRNO(errno,

@@ -19,7 +19,7 @@
 int
 rpma_conn_new(struct rpma_peer *peer, struct rdma_cm_id *id,
 		struct rpma_cq *cq, struct rpma_cq *rcq,
-		struct ibv_comp_channel *channel, struct rpma_conn **conn_ptr)
+		struct rpma_comp_channel *channel, struct rpma_conn **conn_ptr)
 {
 	assert_ptr_equal(peer, MOCK_PEER);
 	check_expected_ptr(id);
