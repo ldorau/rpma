@@ -34,7 +34,7 @@
 /*
  * By default the completion channel is shared by CQ and RCQ.
  */
-#define RPMA_DEFAULT_SHARED_COMPL_CHANNEL false
+#define RPMA_DEFAULT_SHARED_COMPL_CHANNEL true
 
 struct rpma_conn_cfg {
 	int timeout_ms;	/* connection establishment timeout */
