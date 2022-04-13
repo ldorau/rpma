@@ -165,6 +165,12 @@ function run_pytest() {
 
 ./prepare-for-build.sh
 
+# make sure the repository is owned by me
+USER=$(whoami)
+sudo_password -S chown -R ${USER} $WORKDIR
+cd $WORKDIR
+git config --global --add safe.directory $WORKDIR
+
 # look for libprotobuf-c
 USR=$(find /usr -name "*protobuf-c.so*" || true)
 LIB=$(find /lib* -name "*protobuf-c.so*" || true)
