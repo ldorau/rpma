@@ -219,9 +219,13 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug \
 	-DTEST_PYTHON_TOOLS=${TEST_PYTHON_TOOLS} \
 	-DDEVELOPER_MODE=1
 
-make -j$(nproc)
-ctest --output-on-failure
-sudo_password -S make -j$(nproc) install
+echo "======================================================"
+pwd
+ls -al
+echo "======================================================"
+make -j$(nproc) || ( echo "FAILED: make" && ls -al && pwd && cd .. && ls -al && pwd && whoami && groups && exit 1 )
+ctest --output-on-failure || ( echo "FAILED: ctest" && ls -al && pwd && cd .. && ls -al && pwd && whoami && groups && exit 1 )
+sudo_password -S make -j$(nproc) install || ( echo "FAILED: install" && ls -al && pwd && cd .. && ls -al && pwd && whoami && groups && ls -ald /rpma && ls -al / && echo "FAILED: install" && exit 1 )
 
 if [ "$COVERAGE" == "1" ]; then
 	upload_codecov tests
