@@ -484,7 +484,13 @@ rpma_conn_req_connect(struct rpma_conn_req **req_ptr,
 	const struct rpma_conn_private_data *pdata, struct rpma_conn **conn_ptr)
 {
 	RPMA_DEBUG_TRACE;
-	RPMA_FAULT_INJECTION();
+	RPMA_FAULT_INJECTION(
+	{
+		if (req_ptr && *req_ptr) {
+			free(*req_ptr);
+			*req_ptr = NULL;
+		}
+	});
 
 	if (req_ptr == NULL || conn_ptr == NULL)
 		return RPMA_E_INVAL;
@@ -494,8 +500,11 @@ rpma_conn_req_connect(struct rpma_conn_req **req_ptr,
 		return RPMA_E_INVAL;
 
 	if (pdata != NULL) {
-		if (pdata->ptr == NULL || pdata->len == 0)
+		if (pdata->ptr == NULL || pdata->len == 0) {
+			free(*req_ptr);
+			*req_ptr = NULL;
 			return RPMA_E_INVAL;
+		}
 	}
 
 	struct rdma_conn_param conn_param = {0};
