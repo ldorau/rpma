@@ -42,3 +42,6 @@ add_multithreaded(NAME conn BIN rpma_write_read
 add_multithreaded(NAME conn BIN rpma_send USE_LIBIBVERBS
 	SRCS rpma_send.c rpma_common.c server_rpma_common.c server_rpma_send.c
 		../common/mtt_connect.c ../common/mtt_common-epoll.c)
+add_multithreaded(NAME conn BIN rpma_recv USE_LIBIBVERBS
+	SRCS rpma_recv.c rpma_common.c server_rpma_common.c server_rpma_recv.c
+		../common/mtt_connect.c ../common/mtt_common-epoll.c)

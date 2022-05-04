@@ -32,6 +32,7 @@ static void
 thread_seq_init(unsigned id, void *prestate, void **state_ptr, struct mtt_result *tr)
 {
 	struct prestate *pr = (struct prestate *)prestate;
+	int ret;
 
 	/* allocate a thread state */
 	struct thread_state *ts = mtt_malloc_aligned(sizeof(struct thread_state), tr);
@@ -50,18 +51,18 @@ thread_seq_init(unsigned id, void *prestate, void **state_ptr, struct mtt_result
 	memset(ts->local_ptr, 0, ts->mr_local_size);
 	memcpy(ts->local_ptr, STRING_TO_WRITE_SEND, LEN_STRING_TO_WRITE_SEND);
 
-	int ret = mtt_client_connect(tr, pr->addr, pr->port, pr->peer, &ts->conn, &ts->pdata,
-					NULL, 0, 0, NULL);
-	if (ret)
-		goto err_free;
-
 	/* register the memory */
 	ret = rpma_mr_reg(pr->peer, ts->local_ptr, ts->mr_local_size,
 			RPMA_MR_USAGE_READ_DST | RPMA_MR_USAGE_WRITE_SRC, &ts->mr_local_ptr);
 	if (ret) {
 		MTT_RPMA_ERR(tr, "rpma_mr_reg", ret);
-		goto err_conn_disconnect;
+		goto err_free;
 	};
+
+	ret = mtt_client_connect(tr, pr->addr, pr->port, pr->peer, &ts->conn, &ts->pdata,
+					ts->mr_local_ptr, 0, ts->mr_local_size, (void *)WR_ID_RECV);
+	if (ret)
+		goto err_mr_dereg;
 
 	/*
 	 * Create a remote memory registration structure from the received
@@ -72,7 +73,7 @@ thread_seq_init(unsigned id, void *prestate, void **state_ptr, struct mtt_result
 			&ts->mr_remote_ptr);
 	if (ret) {
 		MTT_RPMA_ERR(tr, "rpma_mr_remote_from_descriptor", ret);
-		goto err_mr_dereg;
+		goto err_conn_disconnect;
 	};
 
 	ret = rpma_mr_remote_get_size(ts->mr_remote_ptr, &ts->mr_remote_size);
@@ -92,12 +93,12 @@ err_mr_remote_delete:
 	/* delete the remote memory region's structure */
 	(void) rpma_mr_remote_delete(&ts->mr_remote_ptr);
 
+err_conn_disconnect:
+	mtt_client_err_disconnect(&ts->conn);
+
 err_mr_dereg:
 	/* deregister the memory region */
 	(void) rpma_mr_dereg(&ts->mr_local_ptr);
-
-err_conn_disconnect:
-	mtt_client_err_disconnect(&ts->conn);
 
 err_free:
 	free(ts->local_ptr);
