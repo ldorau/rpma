@@ -178,6 +178,9 @@ echo "##################################################################"
 mkdir -p $WORKDIR/build
 cd $WORKDIR/build
 
+# workaround for https://github.com/actions/checkout/issues/766
+git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
 CC=$CC \
 cmake .. -DCMAKE_BUILD_TYPE=Debug \
 	-DTEST_DIR=$TEST_DIR \
@@ -202,6 +205,9 @@ echo "##################################################################"
 
 mkdir -p $WORKDIR/build
 cd $WORKDIR/build
+
+# workaround for https://github.com/actions/checkout/issues/766
+git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
 CC=$CC \
 cmake .. -DCMAKE_BUILD_TYPE=Debug \
