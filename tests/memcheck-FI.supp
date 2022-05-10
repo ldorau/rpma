@@ -1,0 +1,18 @@
+{
+   <EX 01 FI #25>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:rpma_private_data_store
+   fun:rpma_conn_req_from_cm_event
+   fun:rpma_ep_next_conn_req
+   ...
+}
+{
+   <EX 04 FI #40>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:rpma_mr_remote_from_descriptor
+   ...
+}
