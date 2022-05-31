@@ -106,3 +106,37 @@
    fun:rpma_utils_get_ibv_context
    ...
 }
+
+{
+   1 bytes in 1 blocks are possibly lost in loss record 1 of 13
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:ucma_init_device.part.0
+   fun:UnknownInlinedFun
+   fun:ucma_get_device
+   fun:ucma_query_addr
+   fun:rdma_bind_addr2
+   fun:rpma_info_bind_addr
+   fun:rpma_utils_get_ibv_context
+   ...
+}
+
+{
+   640 bytes in 1 blocks are possibly lost in loss record 5 of 13
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:UnknownInlinedFun
+   fun:_verbs_init_and_alloc_context
+   fun:rxe_alloc_context
+   fun:verbs_open_device
+   fun:ucma_init_device.part.0
+   fun:UnknownInlinedFun
+   fun:ucma_get_device
+   fun:ucma_query_addr
+   fun:rdma_bind_addr2
+   fun:rpma_info_bind_addr
+   fun:rpma_utils_get_ibv_context
+   ...
+}
