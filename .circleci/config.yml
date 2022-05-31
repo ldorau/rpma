@@ -35,3 +35,5 @@ jobs:
       - run:
           name: Run all examples under valgrind
           command: cd build && make run_all_examples_under_valgrind
+    # The resource_class feature allows configuring CPU and RAM resources for each job. Different resource classes are available for different executors. https://circleci.com/docs/2.0/configuration-reference/#resourceclass
+    resource_class: large
