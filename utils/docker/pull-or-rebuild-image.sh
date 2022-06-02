@@ -30,7 +30,7 @@ function rebuild_and_push_image()
 	# Rebuild Docker image for the current OS version
 	echo "Rebuilding the Docker image for the Dockerfile.$OS-$OS_VER"
 	pushd $images_dir_name
-	./build-image.sh ${DOCKER_REPO} ${OS}-${OS_VER}
+	# ./build-image.sh ${DOCKER_REPO} ${OS}-${OS_VER}
 	popd
 
 	# Check if the image has to be pushed to ${DOCKER_REPO}
@@ -38,17 +38,30 @@ function rebuild_and_push_image()
 	# repository's master branch, and the Travis build is not
 	# of the "pull_request" type). In that case, create the empty
 	# file.
+
+	echo CI_REPO_SLUG=$CI_REPO_SLUG
+	echo GITHUB_REPO=$GITHUB_REPO
+	echo CI_BRANCH=$CI_BRANCH
+	echo CI_EVENT_TYPE=$CI_EVENT_TYPE
+	echo PUSH_IMAGE=$PUSH_IMAGE
+
 	if [[ "${CI_REPO_SLUG}" == "${GITHUB_REPO}" \
 		&& ($CI_BRANCH == stable-* || $CI_BRANCH == master) \
 		&& $CI_EVENT_TYPE != "pull_request"
 		&& $PUSH_IMAGE == "1" ]]
 	then
 		echo "The image will be pushed to ${DOCKER_REPO}"
+		echo CI_FILE_PUSH_IMAGE_TO_REPO=$CI_FILE_PUSH_IMAGE_TO_REPO
 		touch $CI_FILE_PUSH_IMAGE_TO_REPO
 	else
 		echo "Skip pushing the image to ${DOCKER_REPO}"
 	fi
-	exit 0
+
+	echo "The image will be pushed to ${DOCKER_REPO}"
+	echo CI_FILE_PUSH_IMAGE_TO_REPO=$CI_FILE_PUSH_IMAGE_TO_REPO
+	touch $CI_FILE_PUSH_IMAGE_TO_REPO
+
+	# exit 0
 }
 
 if [[ "$TYPE" == "coverity" && "$CI_EVENT_TYPE" != "cron" && "$CI_BRANCH" != "coverity_scan" ]]; then

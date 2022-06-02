@@ -18,12 +18,18 @@
 #
 
 set -e
+set -x
 
 source $(dirname $0)/set-ci-vars.sh
 
 if [[ -z "$OS" || -z "$OS_VER" ]]; then
 	echo "ERROR: The variables OS and OS_VER have to be set " \
 		"(eg. OS=fedora, OS_VER=30)."
+	exit 1
+fi
+
+if [[ -z "$DOCKER_REPO" ]]; then
+	echo "ERROR: The variable DOCKER_REPO has to be set."
 	exit 1
 fi
 
@@ -43,16 +49,28 @@ fi
 
 imageName=${DOCKER_REPO}:${IMG_VER}-${OS}-${OS_VER}
 containerName=rpma-${OS}-${OS_VER}
+echo imageName=$imageName
+echo containerName=$containerName
 
 if [[ "$command" == "" ]]; then
 	case $TYPE in
-		normal)
-			command="./run-build.sh";
-			;;
 		coverity)
 			command="./run-coverity.sh";
 			;;
+		circleci)
+			command="./run-circleci.sh";
+			;;
+		*)
+			command="./run-build.sh";
+			;;
 	esac
+fi
+
+echo command=$command
+
+if [[ -z "$command" ]]; then
+	echo "ERROR: The variable 'command' has not been set."
+	exit 1
 fi
 
 if [ "$COVERAGE" == "1" ]; then
@@ -70,7 +88,7 @@ WORKDIR=/rpma
 SCRIPTSDIR=$WORKDIR/utils/docker
 
 # check if we are running on a CI (Travis or GitHub Actions)
-[ -n "$GITHUB_ACTIONS" -o -n "$TRAVIS" ] && CI_RUN="YES" || CI_RUN="NO"
+[ -n "$GITHUB_ACTIONS" -o -n "$TRAVIS" -o "$CIRCLECI" == "true" ] && CI_RUN="YES" || CI_RUN="NO"
 
 # do not allocate a pseudo-TTY if we are running on GitHub Actions
 [ ! $GITHUB_ACTIONS ] && TTY='-t' || TTY=''
@@ -86,6 +104,7 @@ docker run --privileged=true --name=$containerName -i $TTY \
 	${docker_opts} \
 	--env http_proxy=$http_proxy \
 	--env https_proxy=$https_proxy \
+	--env RPMA_SOFT_ROCE_IP=$RPMA_SOFT_ROCE_IP \
 	--env AUTO_DOC_UPDATE=$AUTO_DOC_UPDATE \
 	--env GITHUB_ACTIONS=$GITHUB_ACTIONS \
 	--env GITHUB_HEAD_REF=$GITHUB_HEAD_REF \

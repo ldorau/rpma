@@ -5,33 +5,31 @@ workflows:
       - build
 jobs:
   build:
+    environment:
+      OS: ubuntu
+      OS_VER: 20.04
+      GITHUB_REPO: pmem/rpma
+      # use GitHub Container Registry as a repository of docker images
+      GH_CR_ADDR:  ghcr.io
+      DOCKER_REPO: ghcr.io/pmem/rpma
+      TYPE: circleci
+      WORKDIR: utils/docker
+      HOST_WORKDIR: /home/circleci/project
+      PUSH_IMAGE: 1
     machine:
       image: ubuntu-2004:202101-01
     steps:
       - checkout
       - run:
-          name: Install required packages
-          command: .circleci/install-pkgs-ubuntu.sh
-      - run:
-          name: Install cmocka
-          command: utils/docker/images/install-cmocka.sh
-      - run:
-          name: Build rpma
-          command: |
-            mkdir build
-            cd build
-            RPMA_SOFT_ROCE_IP="will_be_set_later" cmake .. -DTESTS_USE_VALGRIND=ON
-            make -j$(nproc)
+          name: Install extra kernel modules
+          command: .circleci/install-kernel-modules.sh
       - run:
           # Configure SoftRoCE and read the RPMA_SOFT_ROCE_IP environment variable
           name: Configure SoftRoCE
-          command: cd build && make config_softroce && source $BASH_ENV
+          command: tools/config_softroce.sh && source $BASH_ENV && echo $BASH_ENV && echo RPMA_SOFT_ROCE_IP=$RPMA_SOFT_ROCE_IP
       - run:
-          name: Run tests
-          command: cd build && ctest --output-on-failure
+          name: Run pull-or-rebuild-image.sh
+          command: cd $WORKDIR && ./pull-or-rebuild-image.sh
       - run:
-          name: Run all examples
-          command: cd build && make run_all_examples
-      - run:
-          name: Run all examples under valgrind
-          command: cd build && make run_all_examples_under_valgrind
+          name: Push the image
+          command: cd $WORKDIR && source ./set-vars.sh && /bin/bash -c "if [[ -f ${CI_FILE_PUSH_IMAGE_TO_REPO} ]]; then images/push-image.sh; fi"
