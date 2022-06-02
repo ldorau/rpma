@@ -1,0 +1,27 @@
+dist: trusty
+
+sudo: required
+
+language: c
+
+services:
+  - docker
+
+env:
+  global:
+    - GITHUB_REPO=pmem/rpma
+    - DOCKER_REPO=ghcr.io/pmem/rpma
+    - GH_CR_ADDR=ghcr.io
+  matrix:
+    - OS=ubuntu OS_VER=20.04 TYPE=normal CC=gcc
+    - OS=fedora OS_VER=32    TYPE=normal CC=gcc
+    - OS=fedora OS_VER=32    TYPE=normal CC=clang
+
+before_install:
+  - echo $TRAVIS_COMMIT_RANGE
+  - export HOST_WORKDIR=`pwd`
+  - cd utils/docker
+  - ./pull-or-rebuild-image.sh
+
+script:
+  - ./build.sh

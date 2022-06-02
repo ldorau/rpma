@@ -172,31 +172,6 @@ LIB=$(find /lib* -name "*protobuf-c.so*" || true)
 
 echo
 echo "##################################################################"
-echo "### Verify build with ASAN and UBSAN ($CC, DEBUG)"
-echo "##################################################################"
-
-mkdir -p $WORKDIR/build
-cd $WORKDIR/build
-
-CC=$CC \
-cmake .. -DCMAKE_BUILD_TYPE=Debug \
-	-DTEST_DIR=$TEST_DIR \
-	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
-	-DTESTS_SOFT_ROCE=OFF \
-	-DDEVELOPER_MODE=1 \
-	-DUSE_ASAN=${CI_SANITS} \
-	-DTEST_PYTHON_TOOLS=${TEST_PYTHON_TOOLS} \
-	-DUSE_UBSAN=${CI_SANITS}
-
-make -j$(nproc)
-ctest --output-on-failure
-run_pytest
-
-cd $WORKDIR
-rm -rf $WORKDIR/build
-
-echo
-echo "##################################################################"
 echo "### Verify build and install (in dir: ${PREFIX}) ($CC, DEBUG)"
 echo "##################################################################"
 
@@ -209,12 +184,15 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug \
 	-DCMAKE_INSTALL_PREFIX=$PREFIX \
 	-DCOVERAGE=$COVERAGE \
 	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
-	-DTESTS_SOFT_ROCE=OFF \
+	-DTESTS_SOFT_ROCE=ON \
 	-DTEST_PYTHON_TOOLS=${TEST_PYTHON_TOOLS} \
+	-DTESTS_USE_VALGRIND=ON \
 	-DDEVELOPER_MODE=1
 
 make -j$(nproc)
-ctest --output-on-failure
+echo "ctest --output-on-failure"
+/bin/bash -i
+
 sudo_password make -j$(nproc) install
 
 if [ "$COVERAGE" == "1" ]; then
