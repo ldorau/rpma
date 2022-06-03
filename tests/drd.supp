@@ -36,6 +36,22 @@
    ...
 }
 
+{
+   Not a condition variable
+   drd:CondErr
+   ...
+   fun:rpma_utils_get_ibv_context
+   ...
+}
+
+{
+   The object at address x is not a mutex
+   drd:MutexErr
+   ...
+   fun:rpma_utils_get_ibv_context
+   ...
+}
+
 #
 # Assessment: These suppressions do NOT indicate a lack of MT safety.
 #

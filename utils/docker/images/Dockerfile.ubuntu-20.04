@@ -41,7 +41,8 @@ ENV TOOLS_DEPS "\
 ENV TESTS_DEPS "\
 	pylint3 \
 	python3-pip \
-	python3-pytest"
+	python3-pytest \
+	valgrind"
 
 ENV PYTHON_DEPS "\
 	coverage \
@@ -81,6 +82,10 @@ RUN ./install-cmocka.sh
 # Install txt2man
 COPY install-txt2man.sh install-txt2man.sh
 RUN ./install-txt2man.sh
+
+# Set limits
+COPY set-limits.sh set-limits.sh
+RUN ./set-limits.sh
 
 # Download scripts required in run-*.sh
 COPY download-scripts.sh download-scripts.sh
