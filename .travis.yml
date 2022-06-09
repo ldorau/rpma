@@ -12,10 +12,13 @@ env:
     - GITHUB_REPO=pmem/rpma
     - DOCKER_REPO=ghcr.io/pmem/rpma
     - GH_CR_ADDR=ghcr.io
+    - TYPE=normal
+    - CC=gcc
   matrix:
-    - OS=ubuntu OS_VER=22.04 TYPE=normal CC=gcc
-    - OS=fedora OS_VER=32    TYPE=normal CC=gcc
-    - OS=fedora OS_VER=32    TYPE=normal CC=clang
+    - OS=ubuntu OS_VER=22.04
+    - OS=ubuntu OS_VER=22.04 TYPE=circleci
+    - OS=fedora OS_VER=32
+    - OS=fedora OS_VER=32 CC=clang
 
 before_install:
   - echo $TRAVIS_COMMIT_RANGE

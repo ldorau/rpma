@@ -46,11 +46,14 @@ containerName=rpma-${OS}-${OS_VER}
 
 if [[ "$command" == "" ]]; then
 	case $TYPE in
-		normal)
-			command="./run-build.sh";
+		circleci)
+			command="./run-circleci.sh";
 			;;
 		coverity)
 			command="./run-coverity.sh";
+			;;
+		*|normal)
+			command="./run-build.sh";
 			;;
 	esac
 fi
