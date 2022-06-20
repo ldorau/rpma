@@ -43,8 +43,10 @@ ENV TOOLS_DEPS "\
 	python3-jinja2"
 
 ENV TESTS_DEPS "\
+	kmod \
 	python3-pip \
-	python3-pytest"
+	python3-pytest \
+	valgrind"
 
 ENV PYTHON_DEPS "\
 	coverage \
@@ -90,6 +92,12 @@ RUN ./install-txt2man.sh
 COPY download-scripts.sh download-scripts.sh
 COPY 0001-fix-generating-gcov-files-and-turn-off-verbose-log.patch 0001-fix-generating-gcov-files-and-turn-off-verbose-log.patch
 RUN ./download-scripts.sh
+
+######################################################################
+RUN apt-get update
+# && apt-get dist-upgrade -y
+RUN apt-get install -y --no-install-recommends iproute2
+######################################################################
 
 # Add user
 ENV USER user
