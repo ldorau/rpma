@@ -477,17 +477,6 @@ if [ "$MODE" != "integration-tests" ]; then
 		run_example $DIR
 	done
 else
-	# run the CLIENT with fault-injection
-	for srv in $EXAMPLES; do
-		DIR=$(dirname $srv)
-		# get the maximum reachable value of fault-injection
-		run_example $DIR 0 $GET_FI_MAX
-		for fault_inject in $(seq 1 $(($C_FI_MAX + 1))); do
-			run_example $DIR 0 $fault_inject
-			print_FI_if_failed
-		done
-	done
-
 	# run the SERVER with fault-injection
 	for srv in $EXAMPLES; do
 		DIR=$(dirname $srv)
