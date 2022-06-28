@@ -17,6 +17,26 @@ TEST_DIR=${RPMA_TEST_DIR:-${DEFAULT_TEST_DIR}}
 TESTS_PERF_TOOLS=${TESTS_PERF_TOOLS:-ON}
 EXAMPLE_TEST_DIR="/tmp/rpma_example_build"
 
+function run_ldd_on_examples() {
+	set -x
+	DIR=$1
+	SERVERS=$(find $DIR -type f -name "server")
+	for server in $SERVERS; do
+		if ! ldd $server | grep -e 'librpma.so'; then
+			echo "$server is not linked with librpma.so"
+			exit 1
+		fi
+	done
+	CLIENTS=$(find $DIR -type f -name "client")
+	for client in $CLIENTS; do
+		if ! ldd $client | grep -e 'librpma.so'; then
+			echo "$client is not linked with librpma.so"
+			exit 1
+		fi
+	done
+	set +x
+}
+
 # turn off sanitizers only if (CI_SANITS == OFF)
 [ "$CI_SANITS" != "OFF" ] && CI_SANITS=ON
 
@@ -94,6 +114,7 @@ function compile_example_standalone() {
 	fi
 
 	make -j$(nproc)
+	run_ldd_on_examples .
 	cd - > /dev/null
 }
 
@@ -186,6 +207,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug \
 	-DDEBUG_USE_UBSAN=${CI_SANITS}
 
 make -j$(nproc)
+run_ldd_on_examples ./examples
 ctest --output-on-failure
 run_pytest
 
@@ -209,6 +231,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug \
 	-DBUILD_DEVELOPER_MODE=1
 
 make -j$(nproc)
+run_ldd_on_examples ./examples
 ctest --output-on-failure
 sudo_password make -j$(nproc) install
 
@@ -248,6 +271,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_DEVELOPER_MODE=1
 
 make -j$(nproc)
+run_ldd_on_examples ./examples
 ctest --output-on-failure
 
 if [ "$PACKAGE_MANAGER" = "" ]; then

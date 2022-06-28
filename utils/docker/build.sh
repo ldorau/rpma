@@ -19,6 +19,12 @@
 
 set -e
 
+function run_command() {
+	echo "*** Running the following command: ***"
+	echo "$ $*"
+	eval $*
+}
+
 source $(dirname $0)/set-ci-vars.sh
 
 if [[ -z "$OS" || -z "$OS_VER" ]]; then
@@ -81,7 +87,7 @@ echo Building ${IMG_VER}-${OS}-${OS_VER}
 #  - environment variables set (--env)
 #  - host directory containing source mounted (-v)
 #  - working directory set (-w)
-docker run --privileged=true --name=$containerName -i $TTY \
+run_command docker run --privileged=true --name=$containerName -i $TTY \
 	$DNS_SETTING \
 	${docker_opts} \
 	--env http_proxy=$http_proxy \
