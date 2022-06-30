@@ -34,7 +34,7 @@ ENV EXAMPLES_DEPS "\
 
 ENV TOOLS_DEPS "\
 	python3-Jinja2 \
-	python38"
+	python39"
 
 ENV TESTS_DEPS "\
 	python3-pylint \
@@ -47,6 +47,7 @@ ENV PYTHON_DEPS "\
 	markdown2 \
 	matplotlib \
 	paramiko \
+	pysqlite3 \
 	scp"
 
 # RPMA deps
