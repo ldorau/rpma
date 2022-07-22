@@ -487,17 +487,6 @@ else
 			print_FI_if_failed
 		done
 	done
-
-	# run the SERVER with fault-injection
-	for srv in $EXAMPLES; do
-		DIR=$(dirname $srv)
-		# get the maximum reachable value of fault-injection
-		run_example $DIR $GET_FI_MAX 0
-		for fault_inject in $(seq 1 $(($S_FI_MAX + 1))); do
-			run_example $DIR $fault_inject 0
-			print_FI_if_failed
-		done
-	done
 fi
 
 
