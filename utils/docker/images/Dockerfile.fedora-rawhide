@@ -91,5 +91,17 @@ ENV OS_VER rawhide
 ENV PACKAGE_MANAGER rpm
 ENV NOTTY 1
 
+# RUN pip3 uninstall setuptools
+RUN pip3 install --user --upgrade setuptools==59.8.0
+
 # install python modules for the default user
-RUN pip3 install --user $TOOLS_PYTHON_DEPS
+RUN pip3 install --user \
+	wheel \
+	coverage \
+	deepdiff \
+	markdown2 \
+	paramiko \
+	scp
+
+RUN SETUPTOOLS_USE_DISTUTILS=stdlib pip3 install --user $TOOLS_PYTHON_DEPS
+
