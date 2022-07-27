@@ -183,6 +183,10 @@ add_example(NAME 12s-receive-completion-queue BIN server
 	SRCS 12s-receive-completion-queue/server.c)
 add_example(NAME 12s-receive-completion-queue BIN client
 	SRCS 12s-receive-completion-queue/client.c)
+add_example(NAME 12srq-receive-completion-queue BIN server
+	SRCS 12s-receive-completion-queue/server.c)
+add_example(NAME 12srq-receive-completion-queue BIN client
+	SRCS 12s-receive-completion-queue/client.c)
 
 add_example(NAME log BIN log SRCS
 	log/log-example.c
