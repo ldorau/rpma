@@ -89,15 +89,16 @@ main(int argc, char *argv[])
 		goto err_peer_delete;
 	}
 
+	struct rpma_srq_cfg *srq = NULL;
+	if ((ret = rpma_srq_cfg_new(&srq)))
+		goto err_mr_dereg;
+
 	/* create a new connection configuration and set RCQ size */
 	struct rpma_conn_cfg *cfg = NULL;
 	if ((ret = rpma_conn_cfg_new(&cfg)))
 		goto err_mr_dereg;
 
-	if ((ret = rpma_conn_cfg_set_rcq_size(cfg, RCQ_SIZE)))
-		goto err_cfg_delete;
-
-	if ((ret = rpma_conn_cfg_set_compl_channel(cfg, true)))
+	if ((ret = rpma_conn_cfg_set_srq(cfg, srq)))
 		goto err_cfg_delete;
 
 	/* establish a new connection to a server listening at addr:port */
