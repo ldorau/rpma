@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
+/* Copyright 2022, Intel Corporation */
 /* Copyright 2022, Fujitsu */
 
 /*
@@ -150,7 +151,7 @@ rpma_srq_cfg_get_rq_size(const struct rpma_srq_cfg *cfg, uint32_t *rq_size)
 		return RPMA_E_INVAL;
 
 #ifdef ATOMIC_OPERATIONS_SUPPORTED
-	*rq_size = atomic_load_explicit(&cfg->rq_size, __ATOMIC_SEQ_CST);
+	*rq_size = atomic_load_explicit((_Atomic uint32_t *)&cfg->rq_size, __ATOMIC_SEQ_CST);
 #else
 	*rq_size = cfg->rq_size;
 #endif /* ATOMIC_OPERATIONS_SUPPORTED */
@@ -192,7 +193,7 @@ rpma_srq_cfg_get_rcq_size(const struct rpma_srq_cfg *cfg, uint32_t *rcq_size)
 		return RPMA_E_INVAL;
 
 #ifdef ATOMIC_OPERATIONS_SUPPORTED
-	*rcq_size = atomic_load_explicit(&cfg->rcq_size, __ATOMIC_SEQ_CST);
+	*rcq_size = atomic_load_explicit((_Atomic uint32_t *)&cfg->rcq_size, __ATOMIC_SEQ_CST);
 #else
 	*rcq_size = cfg->rcq_size;
 #endif /* ATOMIC_OPERATIONS_SUPPORTED */
