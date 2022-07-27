@@ -48,6 +48,7 @@ struct rpma_conn_cfg {
 	_Atomic uint32_t sq_size;	/* SQ size */
 	_Atomic uint32_t rq_size;	/* RQ size */
 	_Atomic bool shared_comp_channel; /* completion channel shared by CQ and RCQ */
+	_Atomic uintptr_t srq;		/* shared RQ object of (struct rpma_srq *) type */
 #else
 	int timeout_ms;		/* connection establishment timeout */
 	uint32_t cq_size;	/* main CQ size */
@@ -55,8 +56,8 @@ struct rpma_conn_cfg {
 	uint32_t sq_size;	/* SQ size */
 	uint32_t rq_size;	/* RQ size */
 	bool shared_comp_channel; /* completion channel shared by CQ and RCQ */
+	uintptr_t srq;		/* shared RQ object of (struct rpma_srq *) type */
 #endif /* ATOMIC_OPERATIONS_SUPPORTED */
-	struct rpma_srq *srq;	/* shared RQ object */
 };
 
 static struct rpma_conn_cfg Conn_cfg_default  = {
@@ -66,7 +67,7 @@ static struct rpma_conn_cfg Conn_cfg_default  = {
 	.sq_size = RPMA_DEFAULT_Q_SIZE,
 	.rq_size = RPMA_DEFAULT_Q_SIZE,
 	.shared_comp_channel = RPMA_DEFAULT_SHARED_COMPL_CHANNEL,
-	.srq = NULL
+	.srq = 0
 };
 
 /* internal librpma API */
@@ -144,7 +145,8 @@ rpma_conn_cfg_new(struct rpma_conn_cfg **cfg_ptr)
 		atomic_load_explicit(&Conn_cfg_default.rcq_size, __ATOMIC_SEQ_CST));
 	atomic_init(&(*cfg_ptr)->shared_comp_channel,
 		atomic_load_explicit(&Conn_cfg_default.shared_comp_channel, __ATOMIC_SEQ_CST));
-	(*cfg_ptr)->srq = Conn_cfg_default.srq;
+	atomic_init(&(*cfg_ptr)->srq,
+		atomic_load_explicit(&Conn_cfg_default.srq, __ATOMIC_SEQ_CST));
 #else
 	memcpy(*cfg_ptr, &Conn_cfg_default, sizeof(struct rpma_conn_cfg));
 #endif /* ATOMIC_OPERATIONS_SUPPORTED */
@@ -463,7 +465,11 @@ rpma_conn_cfg_set_srq(struct rpma_conn_cfg *cfg, struct rpma_srq *srq)
 	if (cfg == NULL || srq == NULL)
 		return RPMA_E_INVAL;
 
-	cfg->srq = srq;
+#ifdef ATOMIC_OPERATIONS_SUPPORTED
+	atomic_store_explicit(&cfg->srq, (uintptr_t)srq, __ATOMIC_SEQ_CST);
+#else
+	cfg->srq = (uintptr_t)srq;
+#endif /* ATOMIC_OPERATIONS_SUPPORTED */
 
 	return 0;
 }
@@ -480,7 +486,12 @@ rpma_conn_cfg_get_srq(const struct rpma_conn_cfg *cfg, struct rpma_srq **srq_ptr
 	if (cfg == NULL || srq_ptr == NULL)
 		return RPMA_E_INVAL;
 
-	*srq_ptr = cfg->srq;
+#ifdef ATOMIC_OPERATIONS_SUPPORTED
+	*srq_ptr = (struct rpma_srq *)atomic_load_explicit((_Atomic uintptr_t *)&cfg->srq,
+					__ATOMIC_SEQ_CST);
+#else
+	*srq_ptr = (struct rpma_srq *)cfg->srq;
+#endif /* ATOMIC_OPERATIONS_SUPPORTED */
 
 	return 0;
 }
