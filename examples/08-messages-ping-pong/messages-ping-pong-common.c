@@ -65,7 +65,7 @@ wait_and_process_completions(struct rpma_cq *cq, uint64_t *recv,
 			if (ret)
 				return ret;
 		}
-	} while (*send_cmpl == 0 || *recv_cmpl == 0);
+	} while (*recv_cmpl == 0);
 
 	return 0;
 }

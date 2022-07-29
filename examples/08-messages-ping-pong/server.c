@@ -75,23 +75,37 @@ main(int argc, char *argv[])
 		goto err_ep_shutdown;
 	}
 
-	/* receive an incoming connection request */
-	if ((ret = rpma_ep_next_conn_req(ep, NULL, &req)))
+	struct rpma_conn_cfg *cfg = NULL;
+	if ((ret = rpma_conn_cfg_new(&cfg)))
 		goto err_mr_dereg;
+
+	if ((ret = rpma_conn_cfg_set_rq_size(cfg, 0)))
+		goto err_cfg_delete;
+
+	struct rpma_srq *srq = NULL;
+	if ((ret = rpma_srq_new(peer, NULL, &srq)))
+		goto err_cfg_delete;
+
+	if ((ret = rpma_conn_cfg_set_srq(cfg, srq)))
+		goto err_srq_delete;
+
+	/* receive an incoming connection request */
+	if ((ret = rpma_ep_next_conn_req(ep, cfg, &req)))
+		goto err_srq_delete;
 
 	/*
 	 * Put an initial receive to be prepared for the first message of
 	 * the client's ping-pong.
 	 */
-	if ((ret = rpma_conn_req_recv(req, recv_mr, 0, MSG_SIZE, recv))) {
+	if ((ret = rpma_srq_recv(srq, recv_mr, 0, MSG_SIZE, recv))) {
 		(void) rpma_conn_req_delete(&req);
-		goto err_mr_dereg;
+		goto err_srq_delete;
 	}
 
 	/* accept the connection request and obtain the connection object */
 	if ((ret = rpma_conn_req_connect(&req, NULL, &conn))) {
 		(void) rpma_conn_req_delete(&req);
-		goto err_mr_dereg;
+		goto err_srq_delete;
 	}
 
 	/* wait for the connection to be established */
@@ -104,9 +118,9 @@ main(int argc, char *argv[])
 		goto err_conn_disconnect;
 	}
 
-	/* get the connection's main CQ */
-	struct rpma_cq *cq = NULL;
-	if ((ret = rpma_conn_get_cq(conn, &cq)))
+	/* get the receive CQ of rpma_srq object */
+	struct rpma_cq *rcq = NULL;
+	if ((ret = rpma_srq_get_rcq(srq, &rcq)))
 		goto err_conn_disconnect;
 
 	/* IBV_WC_SEND completion in the first round is not present */
@@ -115,7 +129,7 @@ main(int argc, char *argv[])
 
 	while (1) {
 		/* get completions and process them */
-		ret = wait_and_process_completions(cq, recv, &send_cmpl,
+		ret = wait_and_process_completions(rcq, recv, &send_cmpl,
 				&recv_cmpl);
 		if (ret)
 			break;
@@ -130,7 +144,7 @@ main(int argc, char *argv[])
 		*send = *recv + 1;
 
 		/* prepare a receive for the client's response */
-		if ((ret = rpma_recv(conn, recv_mr, 0, MSG_SIZE, recv)))
+		if ((ret = rpma_srq_recv(srq, recv_mr, 0, MSG_SIZE, recv)))
 			break;
 
 		/* send the new value to the client */
@@ -140,7 +154,7 @@ main(int argc, char *argv[])
 				 * XXX when using RPMA_F_COMPLETION_ON_ERROR
 				 * after few rounds rpma_send() returns ENOMEM.
 				 */
-				RPMA_F_COMPLETION_ALWAYS, NULL)))
+				RPMA_F_COMPLETION_ON_ERROR, NULL)))
 			break;
 
 		/* reset */
@@ -150,6 +164,12 @@ main(int argc, char *argv[])
 
 err_conn_disconnect:
 	ret |= common_disconnect_and_wait_for_conn_close(&conn);
+
+err_srq_delete:
+	ret |= rpma_srq_delete(&srq);
+
+err_cfg_delete:
+	ret |= rpma_conn_cfg_delete(&cfg);
 
 err_mr_dereg:
 	/* deregister the memory regions */

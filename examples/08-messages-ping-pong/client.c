@@ -89,18 +89,32 @@ main(int argc, char *argv[])
 		goto err_peer_delete;
 	}
 
-	/* establish a new connection to a server listening at addr:port */
-	if ((ret = client_connect(peer, addr, port, NULL, NULL, &conn)))
+	struct rpma_conn_cfg *cfg = NULL;
+	if ((ret = rpma_conn_cfg_new(&cfg)))
 		goto err_mr_dereg;
 
-	/* get the connection's main CQ */
-	struct rpma_cq *cq = NULL;
-	if ((ret = rpma_conn_get_cq(conn, &cq)))
+	if ((ret = rpma_conn_cfg_set_rq_size(cfg, 0)))
+		goto err_cfg_delete;
+
+	struct rpma_srq *srq = NULL;
+	if ((ret = rpma_srq_new(peer, NULL, &srq)))
+		goto err_cfg_delete;
+
+	if ((ret = rpma_conn_cfg_set_srq(cfg, srq)))
+		goto err_srq_delete;
+
+	/* establish a new connection to a server listening at addr:port */
+	if ((ret = client_connect(peer, addr, port, cfg, NULL, &conn)))
+		goto err_srq_delete;
+
+	/* get the receive CQ of rpma_srq object */
+	struct rpma_cq *rcq = NULL;
+	if ((ret = rpma_srq_get_rcq(srq, &rcq)))
 		goto err_conn_disconnect;
 
 	while (--rounds) {
 		/* prepare a receive for the server's response */
-		if ((ret = rpma_recv(conn, recv_mr, 0, MSG_SIZE, recv)))
+		if ((ret = rpma_srq_recv(srq, recv_mr, 0, MSG_SIZE, recv)))
 			break;
 
 		/* send a message to the server */
@@ -118,7 +132,7 @@ main(int argc, char *argv[])
 		int recv_cmpl = 0;
 
 		/* get completions and process them */
-		ret = wait_and_process_completions(cq, recv, &send_cmpl,
+		ret = wait_and_process_completions(rcq, recv, &send_cmpl,
 				&recv_cmpl);
 		if (ret)
 			break;
@@ -139,6 +153,12 @@ main(int argc, char *argv[])
 
 err_conn_disconnect:
 	ret |= common_disconnect_and_wait_for_conn_close(&conn);
+
+err_srq_delete:
+	ret |= rpma_srq_delete(&srq);
+
+err_cfg_delete:
+	ret |= rpma_conn_cfg_delete(&cfg);
 
 err_mr_dereg:
 	/* deregister the memory regions */
