@@ -22,7 +22,7 @@ does not need to know server's peer configuration. For an example of peer's
 configuration exchange please see the 05 example.
 
 **Note**: The flush request and response are sent and received via the RPMA's
-messaging API (`rpma_send()` and `rpma_recv()`). Both types of messages are
+messaging API (`rpma_send()` and `rpma_srq_recv()`). Both types of messages are
 serialized and deserialized using the protobuf-c library.
 
 **Note**: If either server or client does not have a PMem path (or it is not
