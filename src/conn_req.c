@@ -41,6 +41,9 @@ struct rpma_conn_req {
 
 	/* a parent RPMA peer of this request - needed for derivative objects */
 	struct rpma_peer *peer;
+
+	/* SRQ - shared RQ */
+	struct rpma_srq *srq;
 };
 
 /*
@@ -174,6 +177,7 @@ rpma_conn_req_from_id(struct rpma_peer *peer, struct rdma_cm_id *id,
 	(*req_ptr)->data.ptr = NULL;
 	(*req_ptr)->data.len = 0;
 	(*req_ptr)->peer = peer;
+	(*req_ptr)->srq = srq;
 
 	return 0;
 
@@ -555,9 +559,10 @@ rpma_conn_req_recv(struct rpma_conn_req *req,
 	if (req == NULL || dst == NULL)
 		return RPMA_E_INVAL;
 
-	return rpma_mr_recv(req->id->qp,
-			dst, offset, len,
-			op_context);
+	if (req->srq)
+		return rpma_srq_recv(req->srq, dst, offset, len, op_context);
+
+	return rpma_mr_recv(req->id->qp, dst, offset, len, op_context);
 }
 
 /*
