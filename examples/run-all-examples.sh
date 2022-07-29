@@ -430,7 +430,8 @@ if [ "$MODE" == "valgrind" -o "$MODE" == "integration-tests" ]; then
 	echo
 fi
 
-EXAMPLES=$(find $BIN_DIR -name server | sort)
+# EXAMPLES=$(find $BIN_DIR -name server | sort)
+EXAMPLES="$BIN_DIR/09-flush-to-persistent-GPSPM/server"
 
 if [ "$MODE" != "integration-tests" ]; then
 	for srv in $EXAMPLES; do
