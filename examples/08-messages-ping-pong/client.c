@@ -89,9 +89,23 @@ main(int argc, char *argv[])
 		goto err_peer_delete;
 	}
 
-	/* establish a new connection to a server listening at addr:port */
-	if ((ret = client_connect(peer, addr, port, NULL, NULL, &conn)))
+	struct rpma_conn_cfg *cfg = NULL;
+	if ((ret = rpma_conn_cfg_new(&cfg)))
 		goto err_mr_dereg;
+
+	if ((ret = rpma_conn_cfg_set_rq_size(cfg, 0)))
+		goto err_cfg_delete;
+
+	struct rpma_srq *srq = NULL;
+	if ((ret = rpma_srq_new(peer, NULL, &srq)))
+		goto err_cfg_delete;
+
+	if ((ret = rpma_conn_cfg_set_srq(cfg, srq)))
+		goto err_srq_delete;
+
+	/* establish a new connection to a server listening at addr:port */
+	if ((ret = client_connect(peer, addr, port, cfg, NULL, &conn)))
+		goto err_srq_delete;
 
 	/* get the connection's main CQ */
 	struct rpma_cq *cq = NULL;
@@ -100,7 +114,7 @@ main(int argc, char *argv[])
 
 	while (--rounds) {
 		/* prepare a receive for the server's response */
-		if ((ret = rpma_recv(conn, recv_mr, 0, MSG_SIZE, recv)))
+		if ((ret = rpma_srq_recv(srq, recv_mr, 0, MSG_SIZE, recv)))
 			break;
 
 		/* send a message to the server */
@@ -139,6 +153,12 @@ main(int argc, char *argv[])
 
 err_conn_disconnect:
 	ret |= common_disconnect_and_wait_for_conn_close(&conn);
+
+err_srq_delete:
+	ret |= rpma_srq_delete(&srq);
+
+err_cfg_delete:
+	ret |= rpma_conn_cfg_delete(&cfg);
 
 err_mr_dereg:
 	/* deregister the memory regions */
