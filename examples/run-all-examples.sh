@@ -271,7 +271,7 @@ function run_example() {
 		[ "$MODE" == "integration-tests" ] && WORDS="1st_word" || WORDS="1st_word 2nd_word 3rd_word"
 		start_client $VLD_CCMD $DIR/client $IP_ADDRESS $PORT $WORDS
 		;;
-	08-messages-ping-pong)
+	08-messages-ping-pong|13-messages-ping-pong-with-srq)
 		SEED=7
 		[ "$MODE" == "integration-tests" ] && ROUNDS=1 || ROUNDS=3
 		start_client $VLD_CCMD $DIR/client $IP_ADDRESS $PORT $SEED $ROUNDS
@@ -430,7 +430,11 @@ if [ "$MODE" == "valgrind" -o "$MODE" == "integration-tests" ]; then
 	echo
 fi
 
-EXAMPLES=$(find $BIN_DIR -name server | sort)
+# EXAMPLES=$(find $BIN_DIR -name server | sort)
+EXAMPLES="
+$BIN_DIR/08-messages-ping-pong/server
+$BIN_DIR/13-messages-ping-pong-with-srq/server
+"
 
 if [ "$MODE" != "integration-tests" ]; then
 	for srv in $EXAMPLES; do
