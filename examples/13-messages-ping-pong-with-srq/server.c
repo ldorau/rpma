@@ -41,7 +41,7 @@ find_connection(uint32_t qp_num)
 		if (conn_ctxs[i].qp_num == qp_num)
 			return i;
 
-	(void) fprintf(stderr, "Unable to find the connection[qp#%d]\n", qp_num);
+	(void) fprintf(stderr, "Unable to find the connection [qp#%d]\n", qp_num);
 	return -1;
 }
 
@@ -122,7 +122,8 @@ main(int argc, char *argv[])
 		 * put an initial receive for each connection to be prepared for
 		 * the first message of the client's ping-pong.
 		 */
-		if ((ret = rpma_srq_recv(srq, recv_mr, (size_t)offset, MSG_SIZE, recv + offset)))
+		if ((ret = rpma_srq_recv(srq, recv_mr, ((size_t)offset * MSG_SIZE), MSG_SIZE,
+						recv + offset)))
 			goto err_send_mr_dereg;
 	}
 
@@ -174,30 +175,38 @@ main(int argc, char *argv[])
 				break;
 			}
 
-			offset = wc[i].wr_id - (uint64_t)recv;
 			recv_ptr = (uint64_t *)wc[i].wr_id;
+			offset = recv_ptr - recv;
+
+			printf("[qp %d] index = %i \n", conn_ctxs[index].qp_num, index);
+			printf("[qp %d] offset = %i \n", conn_ctxs[index].qp_num, offset);
+
 			if (*recv_ptr == I_M_DONE) {
+				printf("[qp %d] *recv_ptr = I_M_DONE \n", conn_ctxs[index].qp_num);
 				total_cnt++;
 				continue;
 			}
 
-			(void) printf("Value received: %" PRIu64 " from the conection[qp#%d]\n",
+			printf("[qp %d] *recv_ptr = %li \n", conn_ctxs[index].qp_num, *recv_ptr);
+
+			(void) printf("Value received: %" PRIu64 " from the conection [qp#%d]\n",
 					*recv_ptr, conn_ctxs[index].qp_num);
 
 			/* prepare a receive for the client's request */
-			if ((ret = rpma_srq_recv(srq, recv_mr, (size_t)offset,
-					MSG_SIZE, recv_ptr))) {
+			if ((ret = rpma_srq_recv(srq, recv_mr, ((size_t)offset * MSG_SIZE),
+							MSG_SIZE, recv_ptr))) {
 				ret = -1;
 				break;
 			}
 
 			*(send + index) = *recv_ptr + 1;
 
-			(void) printf("Value sent: %" PRIu64 " from the conection[qp#%d]\n",
+			(void) printf("Value sent: %" PRIu64 " from the conection [qp#%d]\n",
 					*(send + index), conn_ctxs[index].qp_num);
 
 			/* send a message to the client */
-			if ((ret = rpma_send(conn_ctxs[index].conn, send_mr, (size_t)index,
+			if ((ret = rpma_send(conn_ctxs[index].conn, send_mr,
+					((size_t)offset * MSG_SIZE),
 					MSG_SIZE, RPMA_F_COMPLETION_ON_ERROR, NULL))) {
 				ret = -1;
 				break;
