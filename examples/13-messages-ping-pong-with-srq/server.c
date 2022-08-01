@@ -122,7 +122,8 @@ main(int argc, char *argv[])
 		 * put an initial receive for each connection to be prepared for
 		 * the first message of the client's ping-pong.
 		 */
-		if ((ret = rpma_srq_recv(srq, recv_mr, (size_t)offset, MSG_SIZE, recv + offset)))
+		if ((ret = rpma_srq_recv(srq, recv_mr, (size_t)offset * MSG_SIZE, MSG_SIZE,
+						recv + offset)))
 			goto err_send_mr_dereg;
 	}
 
@@ -174,8 +175,9 @@ main(int argc, char *argv[])
 				break;
 			}
 
-			offset = wc[i].wr_id - (uint64_t)recv;
 			recv_ptr = (uint64_t *)wc[i].wr_id;
+			offset = recv_ptr - recv;
+
 			if (*recv_ptr == I_M_DONE) {
 				total_cnt++;
 				continue;
@@ -185,7 +187,7 @@ main(int argc, char *argv[])
 					*recv_ptr, conn_ctxs[index].qp_num);
 
 			/* prepare a receive for the client's request */
-			if ((ret = rpma_srq_recv(srq, recv_mr, (size_t)offset,
+			if ((ret = rpma_srq_recv(srq, recv_mr, (size_t)offset * MSG_SIZE,
 					MSG_SIZE, recv_ptr))) {
 				ret = -1;
 				break;
@@ -197,7 +199,8 @@ main(int argc, char *argv[])
 					*(send + index), conn_ctxs[index].qp_num);
 
 			/* send a message to the client */
-			if ((ret = rpma_send(conn_ctxs[index].conn, send_mr, (size_t)index,
+			if ((ret = rpma_send(conn_ctxs[index].conn, send_mr,
+					(size_t)offset * MSG_SIZE,
 					MSG_SIZE, RPMA_F_COMPLETION_ON_ERROR, NULL))) {
 				ret = -1;
 				break;
