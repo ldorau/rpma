@@ -454,7 +454,8 @@ if [ "$MODE" == "valgrind" -o "$MODE" == "integration-tests" ]; then
 	echo
 fi
 
-EXAMPLES=$(find $BIN_DIR -name server | sort)
+# EXAMPLES=$(find $BIN_DIR -name server | sort)
+EXAMPLES="$BIN_DIR/13-messages-ping-pong-with-srq/server"
 
 if [ "$MODE" != "integration-tests" ]; then
 	for srv in $EXAMPLES; do
