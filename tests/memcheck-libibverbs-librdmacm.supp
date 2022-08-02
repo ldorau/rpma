@@ -235,7 +235,7 @@
    fun:allocate_stack
    fun:pthread_create@@GLIBC_*
    fun:mtt_run
-   fun:main
+   ...
 }
 
 #
@@ -278,6 +278,89 @@
    fun:ibv_icmd_create_srq
    fun:ibv_cmd_create_srq
    ...
+   fun:ibv_create_srq*
+   fun:rpma_peer_create_srq
+   fun:rpma_srq_new
+   ...
+}
+
+
+#
+# CentOS 8
+#
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:verbs_open_device
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:rdma_get_cm_event
+   ...
+   fun:rdma_resolve_addr
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:rdma_create_qp_ex
+   fun:rdma_create_qp
+   fun:rpma_peer_create_qp
+   fun:rpma_conn_req_from_id
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:rdma_getaddrinfo
+   fun:rpma_info_new
+   fun:rpma_utils_get_ibv_context
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:rdma_bind_addr
+   fun:rpma_info_bind_addr
+   fun:rpma_utils_get_ibv_context
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   obj:/usr/lib64/libibverbs.so.1.14.35.0
+   fun:ibv_cmd_create_srq
+   obj:/usr/lib64/libmlx5.so.1.19.35.0
+   fun:ibv_create_srq
+   fun:rpma_peer_create_srq
+   fun:rpma_srq_new
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ibv_icmd_create_srq
+   fun:ibv_cmd_create_srq
+   obj:*/libmlx5.so*
    fun:ibv_create_srq*
    fun:rpma_peer_create_srq
    fun:rpma_srq_new
