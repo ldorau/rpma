@@ -157,6 +157,16 @@ main(int argc, char *argv[])
 	if ((ret = rpma_conn_cfg_set_rcq_size(cfg, RCQ_SIZE)))
 		goto err_cfg_delete;
 
+	if ((ret = rpma_conn_cfg_set_rq_size(cfg, 0)))
+		goto err_cfg_delete;
+
+	struct rpma_srq *srq = NULL;
+	if ((ret = rpma_srq_new(peer, NULL, &srq)))
+		goto err_cfg_delete;
+
+	if ((ret = rpma_conn_cfg_set_srq(cfg, srq)))
+		goto err_srq_delete;
+
 	/*
 	 * Wait for an incoming connection request, accept it and wait for its
 	 * establishment.
@@ -170,7 +180,7 @@ main(int argc, char *argv[])
 		goto err_req_delete;
 
 	/* prepare buffer for a flush request */
-	if ((ret = rpma_conn_req_recv(req, msg_mr, RECV_OFFSET, MSG_SIZE_MAX, NULL)))
+	if ((ret = rpma_srq_recv(srq, msg_mr, RECV_OFFSET, MSG_SIZE_MAX, NULL)))
 		goto err_req_delete;
 
 	/* accept the connection request and obtain the connection object */
@@ -192,7 +202,7 @@ main(int argc, char *argv[])
 
 	/* wait for the receive completion to be ready */
 	struct rpma_cq *rcq = NULL;
-	if ((ret = rpma_conn_get_rcq(conn, &rcq)))
+	if ((ret = rpma_srq_get_rcq(srq, &rcq)))
 		goto err_conn_delete;
 	if ((ret = rpma_cq_wait(rcq)))
 		goto err_conn_delete;
@@ -202,7 +212,7 @@ main(int argc, char *argv[])
 	/* validate the receive completion */
 	if (wc.status != IBV_WC_SUCCESS) {
 		ret = -1;
-		(void) fprintf(stderr, "rpma_recv() failed: %s\n",
+		(void) fprintf(stderr, "rpma_srq_recv() failed: %s\n",
 				ibv_wc_status_str(wc.status));
 		goto err_conn_delete;
 	}
@@ -298,6 +308,9 @@ err_conn_delete:
 
 err_req_delete:
 	(void) rpma_conn_req_delete(&req);
+
+err_srq_delete:
+	ret |= rpma_srq_delete(&srq);
 
 err_cfg_delete:
 	(void) rpma_conn_cfg_delete(&cfg);

@@ -120,9 +120,19 @@ main(int argc, char *argv[])
 	if ((ret = rpma_conn_cfg_set_rcq_size(cfg, RCQ_SIZE)))
 		goto err_cfg_delete;
 
+	if ((ret = rpma_conn_cfg_set_rq_size(cfg, 0)))
+		goto err_cfg_delete;
+
+	struct rpma_srq *srq = NULL;
+	if ((ret = rpma_srq_new(peer, NULL, &srq)))
+		goto err_cfg_delete;
+
+	if ((ret = rpma_conn_cfg_set_srq(cfg, srq)))
+		goto err_srq_delete;
+
 	/* establish a new connection to a server listening at addr:port */
 	if ((ret = client_connect(peer, addr, port, cfg, NULL, &conn)))
-		goto err_cfg_delete;
+		goto err_srq_delete;
 
 	/* register the memory RDMA write */
 	if ((ret = rpma_mr_reg(peer, mem.mr_ptr, mem.mr_size, RPMA_MR_USAGE_WRITE_SRC, &src_mr)))
@@ -168,7 +178,7 @@ main(int argc, char *argv[])
 		goto err_mr_remote_delete;
 
 	/* prepare a response buffer */
-	if ((ret = rpma_recv(conn, msg_mr, RECV_OFFSET, MSG_SIZE_MAX, NULL)))
+	if ((ret = rpma_srq_recv(srq, msg_mr, RECV_OFFSET, MSG_SIZE_MAX, NULL)))
 		goto err_mr_remote_delete;
 
 	/* prepare a flush message and pack it to a send buffer */
@@ -219,7 +229,7 @@ main(int argc, char *argv[])
 
 	/* wait for the receive completion to be ready */
 	struct rpma_cq *rcq = NULL;
-	if ((ret = rpma_conn_get_rcq(conn, &rcq)))
+	if ((ret = rpma_srq_get_rcq(srq, &rcq)))
 		goto err_mr_remote_delete;
 	if ((ret = rpma_cq_wait(rcq)))
 		goto err_mr_remote_delete;
@@ -229,7 +239,7 @@ main(int argc, char *argv[])
 	/* validate the receive completion */
 	if (wc.status != IBV_WC_SUCCESS) {
 		ret = -1;
-		(void) fprintf(stderr, "rpma_recv() failed: %s\n",
+		(void) fprintf(stderr, "rpma_srq_recv() failed: %s\n",
 				ibv_wc_status_str(wc.status));
 		goto err_mr_remote_delete;
 	}
@@ -283,6 +293,9 @@ err_mr_dereg:
 
 err_conn_disconnect:
 	(void) common_disconnect_and_wait_for_conn_close(&conn);
+
+err_srq_delete:
+	ret |= rpma_srq_delete(&srq);
 
 err_cfg_delete:
 	(void) rpma_conn_cfg_delete(&cfg);
