@@ -82,22 +82,32 @@ main(int argc, char *argv[])
 	if ((ret = rpma_conn_cfg_set_rcq_size(cfg, RCQ_SIZE)))
 		goto err_cfg_delete;
 
+	if ((ret = rpma_conn_cfg_set_rq_size(cfg, 0)))
+		goto err_cfg_delete;
+
+	struct rpma_srq *srq = NULL;
+	if ((ret = rpma_srq_new(peer, NULL, &srq)))
+		goto err_cfg_delete;
+
+	if ((ret = rpma_conn_cfg_set_srq(cfg, srq)))
+		goto err_srq_delete;
+
 	/* receive an incoming connection request */
 	if ((ret = rpma_ep_next_conn_req(ep, cfg, &req)))
-		goto err_cfg_delete;
+		goto err_srq_delete;
 
 	/*
 	 * Post an initial receive to be prepared for the first message of
 	 * the client's ping-pong.
 	 */
-	if ((ret = rpma_conn_req_recv(req, recv_mr, 0, MSG_SIZE, recv))) {
+	if ((ret = rpma_srq_recv(srq, recv_mr, 0, MSG_SIZE, recv))) {
 		(void) rpma_conn_req_delete(&req);
-		goto err_cfg_delete;
+		goto err_srq_delete;
 	}
 
 	/* accept the connection request and obtain the connection object */
 	if ((ret = rpma_conn_req_connect(&req, NULL, &conn)))
-		goto err_cfg_delete;
+		goto err_srq_delete;
 
 	/* wait for the connection to be established */
 	if ((ret = rpma_conn_next_event(conn, &conn_event)))
@@ -116,13 +126,13 @@ main(int argc, char *argv[])
 
 	/* get the connection's RCQ */
 	struct rpma_cq *rcq = NULL;
-	if ((ret = rpma_conn_get_rcq(conn, &rcq)))
+	if ((ret = rpma_srq_get_rcq(srq, &rcq)))
 		goto err_conn_disconnect;
 
 	while (1) {
 		/* get one receive completion and validate it */
 		if ((ret = get_wc_and_validate(rcq, IBV_WC_RECV,
-				"rpma_recv()")))
+				"rpma_srq_recv()")))
 			break;
 
 		if (*recv == I_M_DONE)
@@ -135,7 +145,7 @@ main(int argc, char *argv[])
 		*send = *recv + 1;
 
 		/* prepare a receive for the client's response */
-		if ((ret = rpma_recv(conn, recv_mr, 0, MSG_SIZE, recv)))
+		if ((ret = rpma_srq_recv(srq, recv_mr, 0, MSG_SIZE, recv)))
 			break;
 
 		/* send the new value to the client */
@@ -155,6 +165,9 @@ main(int argc, char *argv[])
 
 err_conn_disconnect:
 	ret |= common_disconnect_and_wait_for_conn_close(&conn);
+
+err_srq_delete:
+	ret |= rpma_srq_delete(&srq);
 
 err_cfg_delete:
 	ret |= rpma_conn_cfg_delete(&cfg);
