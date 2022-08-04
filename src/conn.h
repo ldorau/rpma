@@ -25,7 +25,8 @@
  */
 int rpma_conn_new(struct rpma_peer *peer, struct rdma_cm_id *id,
 		struct rpma_cq *cq, struct rpma_cq *rcq,
-		struct ibv_comp_channel *channel, struct rpma_conn **conn_ptr);
+		struct ibv_comp_channel *channel,
+		struct ibv_srq *ibv_srq, struct rpma_conn **conn_ptr);
 
 /*
  * rpma_conn_transfer_private_data -- transfer the private data to

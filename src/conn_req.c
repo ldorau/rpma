@@ -19,6 +19,7 @@
 #include "mr.h"
 #include "peer.h"
 #include "private_data.h"
+#include "srq.h"
 
 #ifdef TEST_MOCK_ALLOC
 #include "cmocka_alloc.h"
@@ -41,6 +42,9 @@ struct rpma_conn_req {
 
 	/* a parent RPMA peer of this request - needed for derivative objects */
 	struct rpma_peer *peer;
+
+	/* SRQ */
+	struct ibv_srq *ibv_srq;
 };
 
 /*
@@ -174,6 +178,7 @@ rpma_conn_req_from_id(struct rpma_peer *peer, struct rdma_cm_id *id,
 	(*req_ptr)->data.ptr = NULL;
 	(*req_ptr)->data.len = 0;
 	(*req_ptr)->peer = peer;
+	(*req_ptr)->ibv_srq = srq ? rpma_srq_get_ibv_srq(srq) : NULL;
 
 	return 0;
 
@@ -219,7 +224,7 @@ rpma_conn_req_accept(struct rpma_conn_req *req,
 
 	struct rpma_conn *conn = NULL;
 	ret = rpma_conn_new(req->peer, req->id, req->cq, req->rcq,
-				req->channel, &conn);
+				req->channel, req->ibv_srq, &conn);
 	if (ret)
 		goto err_conn_disconnect;
 
@@ -262,7 +267,7 @@ rpma_conn_req_connect_active(struct rpma_conn_req *req,
 
 	struct rpma_conn *conn = NULL;
 	ret = rpma_conn_new(req->peer, req->id, req->cq, req->rcq,
-				req->channel, &conn);
+				req->channel, req->ibv_srq, &conn);
 	if (ret)
 		goto err_conn_new;
 
@@ -554,6 +559,11 @@ rpma_conn_req_recv(struct rpma_conn_req *req,
 
 	if (req == NULL || dst == NULL)
 		return RPMA_E_INVAL;
+
+	if (req->ibv_srq)
+		return rpma_mr_srq_recv(req->ibv_srq,
+				dst, offset, len,
+				op_context);
 
 	return rpma_mr_recv(req->id->qp,
 			dst, offset, len,

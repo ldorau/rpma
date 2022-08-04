@@ -32,6 +32,8 @@ struct rpma_conn {
 	struct rpma_flush *flush; /* flushing object */
 
 	bool direct_write_to_pmem; /* direct write to pmem is supported */
+
+	struct ibv_srq *ibv_srq; /* SRQ */
 };
 
 /* internal librpma API */
@@ -46,7 +48,8 @@ struct rpma_conn {
 int
 rpma_conn_new(struct rpma_peer *peer, struct rdma_cm_id *id,
 		struct rpma_cq *cq, struct rpma_cq *rcq,
-		struct ibv_comp_channel *channel, struct rpma_conn **conn_ptr)
+		struct ibv_comp_channel *channel,
+		struct ibv_srq *ibv_srq, struct rpma_conn **conn_ptr)
 {
 	RPMA_DEBUG_TRACE;
 	RPMA_FAULT_INJECTION(RPMA_E_PROVIDER, {});
@@ -89,6 +92,7 @@ rpma_conn_new(struct rpma_peer *peer, struct rdma_cm_id *id,
 	conn->data.len = 0;
 	conn->flush = flush;
 	conn->direct_write_to_pmem = false;
+	conn->ibv_srq = ibv_srq;
 
 	*conn_ptr = conn;
 
@@ -625,6 +629,11 @@ rpma_recv(struct rpma_conn *conn,
 
 	if (conn == NULL || (dst == NULL && (offset != 0 || len != 0)))
 		return RPMA_E_INVAL;
+
+	if (conn->ibv_srq)
+		return rpma_mr_srq_recv(conn->ibv_srq,
+				dst, offset, len,
+				op_context);
 
 	return rpma_mr_recv(conn->id->qp,
 			dst, offset, len,
