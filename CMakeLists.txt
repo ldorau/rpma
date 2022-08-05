@@ -47,8 +47,8 @@ option(TESTS_USE_FORCED_PMEM "run tests with PMEM_IS_PMEM_FORCE=1" OFF)
 option(TESTS_USE_VALGRIND_PMEMCHECK "enable tests with valgrind pmemcheck (if found)" OFF)
 option(TESTS_VERBOSE_OUTPUT "verbose test outputs" OFF)
 
-option(DEBUG_LOG_TRACE "enable logging function traces" OFF)
-option(DEBUG_FAULT_INJECTION "enable fault injection" OFF)
+option(DEBUG_LOG_TRACE "enable logging function traces" ON)
+option(DEBUG_FAULT_INJECTION "enable fault injection" ON)
 option(DEBUG_USE_ASAN "enable AddressSanitizer (-fsanitize=address)" OFF)
 option(DEBUG_USE_UBSAN "enable UndefinedBehaviorSanitizer (-fsanitize=undefined)" OFF)
 
