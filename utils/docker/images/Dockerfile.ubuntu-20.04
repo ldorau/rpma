@@ -112,3 +112,14 @@ ENV NOTTY 1
 
 # install python modules for the default user
 RUN pip3 install --user $TOOLS_PYTHON_DEPS
+
+RUN cd /home/user && git clone -vvv https://github.com/oneapi-src/oneCCL.git
+
+RUN ls -al /home/user/oneCCL
+
+RUN mkdir -p /home/user/oneCCL/build
+RUN cd /home/user/oneCCL/build && cmake .. && make -j6
+
+RUN cd /home/user/oneCCL/build && make -j6 && make test
+
+RUN xxx
