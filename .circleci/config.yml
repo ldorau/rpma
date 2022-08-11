@@ -27,14 +27,8 @@ jobs:
             cmake .. -DTESTS_RDMA_CONNECTION=ON
             make -j$(nproc)
       - run:
-          name: Run tests without memcheck
-          command: cd build && ctest -E memcheck --output-on-failure
-      - run:
           name: Run all examples
           command: cd build && make run_all_examples
       - run:
-          name: Run all examples under valgrind
-          command: cd build && make run_all_examples_under_valgrind
-      - run:
-          name: Run tests with memcheck
-          command: cd build && ctest --output-on-failure
+          name: Run all examples under valgrind with fault injection
+          command: cd build && make run_all_examples_with_fault_injection
