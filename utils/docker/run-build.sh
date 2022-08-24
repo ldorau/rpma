@@ -176,6 +176,13 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug \
 	-DUSE_UBSAN=${CI_SANITS}
 
 make -j$(nproc)
+
+# Create a PR with generated docs
+if [ "$AUTO_DOC_UPDATE" == "1" ]; then
+	echo "Running auto doc update"
+	../utils/docker/run-doc-update.sh
+fi
+
 ctest --output-on-failure
 run_pytest
 
@@ -206,12 +213,6 @@ sudo_password -S make -j$(nproc) install
 
 if [ "$COVERAGE" == "1" ]; then
 	upload_codecov tests
-fi
-
-# Create a PR with generated docs
-if [ "$AUTO_DOC_UPDATE" == "1" ]; then
-	echo "Running auto doc update"
-	../utils/docker/run-doc-update.sh
 fi
 
 test_compile_all_examples_standalone

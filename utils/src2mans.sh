@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2020, Intel Corporation
+# Copyright 2020-2022, Intel Corporation
 
 #
 # src2mans -- extract man pages from source files
@@ -81,6 +81,7 @@ do
 			rm $f.tmp
 			
 			# generate a md file
+			sed -i 's/\\fP/\\fR/g' $f
 			pandoc -s $f -o $f.tmp1 -f man -t markdown || break
 			# remove the header 
 			tail -n +6 $f.tmp1 > $f.tmp2

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2016-2021, Intel Corporation
+# Copyright 2016-2022, Intel Corporation
 #
 
 #
@@ -93,17 +93,6 @@ for file in $files; do echo $file; done
 # Path to directory with Dockerfiles and image building scripts
 images_dir_name=images
 base_dir=utils/docker/$images_dir_name
-
-# Check if committed file modifications require the Docker image to be rebuilt
-for file in $files; do
-	# Check if modified files are relevant to the current build
-	if [[ $file =~ ^($base_dir)\/Dockerfile\.($OS)-($OS_VER)$ ]] \
-		|| [[ $file =~ ^($base_dir)\/.*\.sh$ ]] \
-		|| [[ "$REBUILD_ALWAYS" == "YES" ]]
-	then
-		rebuild_and_push_image
-	fi
-done
 
 # Getting here means rebuilding the Docker image is not required.
 # Pull the image from ${DOCKER_REPO}. If pulling fails

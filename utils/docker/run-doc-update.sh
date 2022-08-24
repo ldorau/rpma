@@ -1,27 +1,21 @@
 #!/usr/bin/env bash
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2018-2020, Intel Corporation
+# Copyright 2018-2022, Intel Corporation
 #
 
-set -e
+set -ex
 
 source `dirname $0`/valid-branches.sh
 
-BOT_NAME="pmem-bot"
+BOT_NAME="ldorau"
 USER_NAME="pmem"
 REPO_NAME="rpma"
 
 ORIGIN="https://${DOC_UPDATE_GITHUB_TOKEN}@github.com/${BOT_NAME}/${REPO_NAME}"
-UPSTREAM="https://github.com/pmem/${REPO_NAME}"
+UPSTREAM="https://github.com/ldorau/${REPO_NAME}"
 # master or stable-* branch
 TARGET_BRANCH=${CI_BRANCH}
-VERSION=${TARGET_BRANCHES[$TARGET_BRANCH]}
-
-if [ -z $VERSION ]; then
-	echo "Target location for branch $TARGET_BRANCH is not defined."
-	exit 1
-fi
 
 # Clone repo
 git clone ${ORIGIN}
@@ -50,7 +44,7 @@ git checkout -B $GH_PAGES_NAME upstream/gh-pages
 git clean -dfx
 
 # Clean old content, since some files might have been deleted
-DOCS_DIR=./manpages/$VERSION/
+DOCS_DIR=./manpages/v0.10.0/
 rm -r $DOCS_DIR
 mkdir $DOCS_DIR
 
@@ -61,7 +55,7 @@ cp -r ../md/* $DOCS_DIR
 # In that case we want to force push anyway (there might be open pull request with
 # changes which were reverted).
 git add -A
-git commit -m "doc: automatic gh-pages docs update" && true
+git commit -m "doc: fix man-pages of v0.10.0" && true
 git push -f ${ORIGIN} $GH_PAGES_NAME
 
 # Makes pull request.
@@ -69,6 +63,6 @@ git push -f ${ORIGIN} $GH_PAGES_NAME
 GITHUB_TOKEN=${DOC_UPDATE_GITHUB_TOKEN} hub pull-request -f \
 	-b ${USER_NAME}:gh-pages \
 	-h ${BOT_NAME}:${GH_PAGES_NAME} \
-	-m "doc: automatic gh-pages docs update" && true
+	-m "doc: fix man-pages of v0.10.0" && true
 
 exit 0
