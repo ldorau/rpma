@@ -14,6 +14,8 @@
 # verify              - verify if SoftRoCE is already configured
 #
 
+set -x
+
 if [ "$1" == "verify" ]; then
 	VERIFY=1
 	NET_IF=""

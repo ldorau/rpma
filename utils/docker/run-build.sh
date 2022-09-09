@@ -164,6 +164,10 @@ function run_pytest() {
 
 ./prepare-for-build.sh
 
+cd $WORKDIR
+./tools/config_softroce.sh
+exit 0
+
 # look for libprotobuf-c
 USR=$(find /usr -name "*protobuf-c.so*" || true)
 LIB=$(find /lib* -name "*protobuf-c.so*" || true)
