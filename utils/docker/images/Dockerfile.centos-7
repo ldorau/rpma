@@ -24,6 +24,7 @@ ENV BASE_DEPS "\
 	passwd \
 	pkg-config \
 	rpm-build \
+	scons \
 	sudo \
 	which"
 
@@ -60,27 +61,83 @@ ENV TOOLS_PYTHON_DEPS "\
 	pylint \
 	scp"
 
+ENV DAOS_DEPS "\
+    boost-python36-devel \
+    bzip2 \
+    clang-analyzer \
+    cmake \
+    CUnit-devel \
+    e2fsprogs \
+    file \
+    flex \
+    fuse3 \
+    fuse3-devel \
+    gcc \
+    gcc-c++ \
+    git \
+    golang \
+    graphviz \
+    hwloc-devel \
+    ipmctl \
+    java-1.8.0-openjdk \
+    json-c-devel \
+    lcov \
+    libaio-devel \
+    libcmocka-devel \
+    libevent-devel \
+    libipmctl-devel \
+    libiscsi-devel \
+    libtool \
+    libtool-ltdl-devel \
+    libunwind-devel \
+    libuuid-devel \
+    libyaml-devel \
+    Lmod \
+    lz4-devel \
+    make \
+    maven \
+    meson \
+    ndctl \
+    numactl \
+    numactl-devel \
+    openmpi3-devel \
+    openssl-devel \
+    patch \
+    patchelf \
+    pciutils \
+    python-pyelftools \
+    python3-devel \
+    python3-distro \
+    python3-pip \
+    python36-scons \
+    sg3_utils \
+    sudo \
+    valgrind-devel \
+    yasm"
+
 # Install all required packages
 RUN yum install -y \
 	$BASE_DEPS \
 	$RPMA_DEPS \
 	$EXAMPLES_DEPS \
 	$TOOLS_DEPS \
-&& yum clean all
+	$DAOS_DEPS
+
+# && yum clean all
 
 RUN pip3 install --upgrade pip
 
 # run cmake3 as cmake
-RUN ln -s /usr/bin/cmake3 /usr/bin/cmake
-RUN ln -s /usr/bin/ctest3 /usr/bin/ctest
+# RUN ln -s /usr/bin/cmake3 /usr/bin/cmake
+# RUN ln -s /usr/bin/ctest3 /usr/bin/ctest
 
 # Install cmocka
-COPY install-cmocka.sh install-cmocka.sh
-RUN ./install-cmocka.sh
+# COPY install-cmocka.sh install-cmocka.sh
+# RUN ./install-cmocka.sh
 
 # Install txt2man
-COPY install-txt2man.sh install-txt2man.sh
-RUN ./install-txt2man.sh
+# COPY install-txt2man.sh install-txt2man.sh
+# RUN ./install-txt2man.sh
 
 # Add user
 ENV USER user
@@ -98,3 +155,6 @@ ENV NOTTY 1
 
 # install python modules for the default user
 RUN pip3 install --user $TOOLS_PYTHON_DEPS
+
+RUN cd && git clone --recurse-submodules -b release/2.0 https://github.com/daos-stack/daos.git
+

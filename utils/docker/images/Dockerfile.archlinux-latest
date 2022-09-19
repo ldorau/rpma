@@ -10,87 +10,50 @@
 
 # Pull base image
 FROM archlinux:latest
-MAINTAINER tomasz.gromadzki@intel.com
+MAINTAINER lukasz.dorau@intel.com
 
 # Do full system upgrade
 RUN pacman -Syu --noconfirm
 
-# base deps
-ENV BASE_DEPS "\
-	clang \
-	gcc \
-	git \
-	make \
-	pkg-config \
-	sudo \
-	which"
-
-ENV EXAMPLES_DEPS "\
-	m4 \
-	protobuf-c \
-	time"
-
-ENV TOOLS_DEPS "\
-	python-jinja"
-
-ENV TESTS_DEPS "\
-	python-mccabe \
-	python-pylint \
-	python-pip \
-	python-pytest"
-
-# rdma-core deps
-ENV RDMA_DEPS "\
-	fakeroot \
-	file"
-
-ENV PYTHON_DEPS "\
-	coverage \
-	deepdiff \
-	markdown2 \
-	matplotlib \
-	paramiko \
-	scp"
-
-# PMDK deps
-ENV PMDK_DEPS "\
-	ndctl \
-	wget"
-
-# RPMA deps
-ENV RPMA_DEPS "\
-	cmake \
-	diffutils \
-	file \
-	gawk \
-	groff \
-	graphviz \
-	pandoc"
-
 # Install required packages
 RUN pacman -S --noconfirm \
-	$BASE_DEPS \
-	$EXAMPLES_DEPS \
-	$TOOLS_DEPS \
-	$TESTS_DEPS \
-	$RDMA_DEPS \
-	$PMDK_DEPS \
-	$RPMA_DEPS \
-&& rm -rf /var/cache/pacman/pkg/*
+    clang-analyzer \
+    cmake \
+    flex \
+    fuse3 \
+    gcc \
+    git \
+    graphviz \
+    hwloc \
+    jdk8-openjdk \
+    lcov \
+    libaio \
+    libiscsi \
+    libtool \
+    libunwind \
+    libyaml \
+    make \
+    maven \
+    ndctl \
+    numactl \
+    openmpi \
+    patch \
+    patchelf \
+    python \
+    python-pip \
+    scons \
+    sg3_utils \
+    sudo \
+    valgrind \
+    yasm
+
+# && rm -rf /var/cache/pacman/pkg/*
 
 RUN pip3 install --upgrade pip
 
 # Install cmocka
 COPY install-cmocka.sh install-cmocka.sh
 RUN ./install-cmocka.sh
-
-# Install txt2man
-COPY install-txt2man.sh install-txt2man.sh
-RUN ./install-txt2man.sh
-
-# Install PMDK
-COPY install-pmdk.sh install-pmdk.sh
-RUN ./install-pmdk.sh
 
 # Add user
 ENV USER user
@@ -109,9 +72,28 @@ RUN gpasswd wheel -a $USER
 RUN echo 'Defaults env_keep += "ftp_proxy http_proxy https_proxy no_proxy"' >> /etc/sudoers
 RUN echo 'Defaults env_keep += "FTP_PROXY HTTP_PROXY HTTPS_PROXY NO_PROXY"' >> /etc/sudoers
 
-# Install rdma-core and pmdk (requires user 'user')
+RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+RUN echo "LANG=en_US.UTF-8" >> /etc/locale.conf
+RUN /usr/bin/locale-gen
+RUN /usr/bin/locale
+
+RUN pacman -S --noconfirm \
+	autoconf \
+	automake \
+	boost \
+	boost-libs \
+	pkgconf \
+	python-distro
+
+RUN pacman -S --noconfirm \
+	fakeroot
+
+# Install rdma-core
 COPY install-archlinux-aur.sh install-archlinux-aur.sh
 RUN ./install-archlinux-aur.sh rdma-core
+
+RUN pacman -S --noconfirm \
+	meson
 
 # Switch to user
 USER $USER
@@ -122,5 +104,5 @@ ENV OS_VER latest
 ENV PACKAGE_MANAGER none
 ENV NOTTY 1
 
-# install python modules for the default user
-RUN pip3 install --user $PYTHON_DEPS
+RUN locale
+RUN pip3 install --user meson pyelftools

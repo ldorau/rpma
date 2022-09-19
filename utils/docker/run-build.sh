@@ -9,6 +9,8 @@
 #                starts rpma build with tests.
 #
 
+exit 0
+
 set -e
 
 PREFIX=/usr
