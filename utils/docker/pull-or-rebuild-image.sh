@@ -33,21 +33,9 @@ function rebuild_and_push_image()
 	./build-image.sh ${DOCKER_REPO} ${OS}-${OS_VER}
 	popd
 
-	# Check if the image has to be pushed to ${DOCKER_REPO}
-	# (i.e. the build is triggered by commits to the ${GITHUB_REPO}
-	# repository's master branch, and the Travis build is not
-	# of the "pull_request" type). In that case, create the empty
-	# file.
-	if [[ "${CI_REPO_SLUG}" == "${GITHUB_REPO}" \
-		&& ($CI_BRANCH == stable-* || $CI_BRANCH == master) \
-		&& $CI_EVENT_TYPE != "pull_request"
-		&& $PUSH_IMAGE == "1" ]]
-	then
-		echo "The image will be pushed to ${DOCKER_REPO}"
-		touch $CI_FILE_PUSH_IMAGE_TO_REPO
-	else
-		echo "Skip pushing the image to ${DOCKER_REPO}"
-	fi
+	echo "The image will be pushed to ${DOCKER_REPO}"
+	touch $CI_FILE_PUSH_IMAGE_TO_REPO
+
 	exit 0
 }
 

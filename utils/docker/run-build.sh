@@ -9,8 +9,6 @@
 #                starts rpma build with tests.
 #
 
-exit 0
-
 set -e
 
 PREFIX=/usr
@@ -171,6 +169,26 @@ function run_pytest() {
 CMAKE_VERSION=$(cmake --version | grep version | cut -d" " -f3 | cut -d. -f1)
 [ "$CMAKE_VERSION" != "" ] && [ $CMAKE_VERSION -lt 3 ] && \
 	[ "$(which cmake3 2>/dev/null)" != "" ] && CMAKE=cmake3 || CMAKE=cmake
+
+set -x
+
+cd
+# git clone --recurse-submodules -b release/2.0 https://github.com/daos-stack/daos.git
+cd daos && pwd
+sudo_password cp /usr/bin/cmake3 /usr/bin/cmake
+pip3 install --user meson pyelftools
+
+set +e
+echo PATH=$PATH
+which meson
+ls -al /usr/bin/meson*
+rpm -qa | grep meson
+rpm -qi meson
+
+set -e
+scons --config=force --build-deps=yes || scons-3 --config=force --build-deps=yes || ( echo PATH=$PATH && which meson && exit 1 )
+
+exit 0
 
 # look for libprotobuf-c
 USR=$(find /usr -name "*protobuf-c.so*" || true)
