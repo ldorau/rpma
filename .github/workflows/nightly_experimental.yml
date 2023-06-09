@@ -6,10 +6,7 @@
 
 name: Nightly_Experimental
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron:  '0 0 * * *'
+on: [push, pull_request]
 
 env:
     GITHUB_REPO: pmem/rpma
