@@ -85,7 +85,7 @@ function compile_example_standalone() {
 	mkdir $EXAMPLE_TEST_DIR
 	cd $EXAMPLE_TEST_DIR
 
-	$CMAKE $1
+	$CMAKE $1 || ( $CMAKE --version && find /usr/ -name "*CheckCSourceCompiles*" && exit 1 )
 
 	# exit on error
 	if [[ $? != 0 ]]; then
