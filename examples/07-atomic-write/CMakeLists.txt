@@ -11,6 +11,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 	${CMAKE_SOURCE_DIR}/../cmake
 	${CMAKE_SOURCE_DIR}/../../cmake)
 
+set(CHECK_C_SOURCE_INCLUDE_FILE "/usr/share/cmake/Modules/CheckCSourceCompiles.cmake")
+if(EXISTS ${CHECK_C_SOURCE_INCLUDE_FILE})
+	include(${CHECK_C_SOURCE_INCLUDE_FILE})
+endif()
+
 include(${CMAKE_SOURCE_DIR}/../cmake/common.cmake)
 include(${CMAKE_SOURCE_DIR}/../../cmake/functions.cmake)
 
